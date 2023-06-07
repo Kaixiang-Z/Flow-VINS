@@ -83,9 +83,9 @@ public:
     Quaterniond delta_q;
     Vector3d delta_v;
 
-    std::vector<double> dt_buf;
-    std::vector<Vector3d> acc_buf;
-    std::vector<Vector3d> gyr_buf;
+    vector<double> dt_buf;
+    vector<Vector3d> acc_buf;
+    vector<Vector3d> gyr_buf;
 };
 
 /**
@@ -212,11 +212,11 @@ inline int localSize(int size) {
 struct ResidualBlockInfo {
     ResidualBlockInfo(ceres::CostFunction *_cost_function,
                       ceres::LossFunction *_loss_function,
-                      std::vector<double *> _parameter_blocks,
-                      std::vector<int> _drop_set) :
+                      vector<double *> _parameter_blocks,
+                      vector<int> _drop_set) :
         cost_function(_cost_function),
         loss_function(_loss_function),
-        parameter_blocks(std::move(_parameter_blocks)), drop_set(std::move(_drop_set)) {
+        parameter_blocks(move(_parameter_blocks)), drop_set(move(_drop_set)) {
     }
 
     /**
@@ -228,23 +228,23 @@ struct ResidualBlockInfo {
     ceres::CostFunction *cost_function;
     ceres::LossFunction *loss_function;
     double **raw_jacobians{};
-    std::vector<Matrix<double, Dynamic, Dynamic, RowMajor>> jacobians;
+    vector<Matrix<double, Dynamic, Dynamic, RowMajor>> jacobians;
     VectorXd residuals;
     // parameter block, (Twi, extrinsic params, depth, td, etc)
-    std::vector<double *> parameter_blocks;
+    vector<double *> parameter_blocks;
     // parameters waiting for marginalize, correspond to the index in parameter block
-    std::vector<int> drop_set;
+    vector<int> drop_set;
 };
 
 /**
  * @brief: multi-thread struct to construct information matrix A = J^T * J, b = J^T * r
  */
 struct ThreadsStruct {
-    std::vector<ResidualBlockInfo *> sub_factors;
+    vector<ResidualBlockInfo *> sub_factors;
     MatrixXd A;
     VectorXd b;
-    std::unordered_map<long, int> parameter_block_size;
-    std::unordered_map<long, int> parameter_block_idx;
+    unordered_map<long, int> parameter_block_size;
+    unordered_map<long, int> parameter_block_idx;
 };
 
 /**
@@ -281,23 +281,23 @@ public:
     /**
      * @brief: get parameter blocks 
      */
-    std::vector<double *> getParameterBlocks(std::unordered_map<long, double *> &addr_shift);
+    vector<double *> getParameterBlocks(unordered_map<long, double *> &addr_shift);
 
     // all residual terms associated with the current Marg frame
-    std::vector<ResidualBlockInfo *> factors;
+    vector<ResidualBlockInfo *> factors;
     // m is the number of variables to be marg, n is the number of reserved variables
     int m{}, n{};
     // <variable block start address, variable block size>
-    std::unordered_map<long, int> parameter_block_size;
+    unordered_map<long, int> parameter_block_size;
     // <variable block start address，variable block index>
-    std::unordered_map<long, int> parameter_block_idx;
+    unordered_map<long, int> parameter_block_idx;
     // <variable block start address，variable data>
-    std::unordered_map<long, double *> parameter_block_data;
+    unordered_map<long, double *> parameter_block_data;
 
     // variable to be retained size, index and data
-    std::vector<int> keep_block_size;
-    std::vector<int> keep_block_idx;
-    std::vector<double *> keep_block_data;
+    vector<int> keep_block_size;
+    vector<int> keep_block_idx;
+    vector<double *> keep_block_data;
 
     // related to calculate jacobian
     MatrixXd linearized_jacobians;

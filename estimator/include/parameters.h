@@ -50,8 +50,8 @@ extern int SHOW_TRACK;
 extern int FLOW_BACK;
 
 // imu parameters
-extern std::vector<Eigen::Matrix3d> RIC;
-extern std::vector<Eigen::Vector3d> TIC;
+extern vector<Eigen::Matrix3d> RIC;
+extern vector<Eigen::Vector3d> TIC;
 extern Eigen::Vector3d LOOP_TIC;
 extern Eigen::Matrix3d LOOP_QIC;
 extern Eigen::Vector3d G;
@@ -61,10 +61,11 @@ extern double GYR_N, GYR_W;
 // ceres paramters
 extern double SOLVER_TIME;
 extern int NUM_ITERATIONS;
+extern int MAX_SOLVE_CNT;
 
 // ros topics
-extern std::string IMAGE0_TOPIC, IMAGE1_TOPIC;
-extern std::string IMU_TOPIC;
+extern string IMAGE0_TOPIC, IMAGE1_TOPIC;
+extern string IMU_TOPIC;
 extern double TD;
 
 // image parameters
@@ -72,7 +73,7 @@ extern int ROW, COL;
 extern int NUM_OF_CAM;
 extern double INIT_DEPTH;
 extern double MIN_PARALLAX;
-extern std::vector<std::string> CAM_NAMES;
+extern vector<string> CAM_NAMES;
 extern int MAX_CNT;
 extern int MIN_DIST;
 extern int FREQ;
@@ -81,33 +82,33 @@ extern double DEPTH_MAX_DIST;
 extern double F_THRESHOLD;
 
 // file paths
-extern std::string EX_CALIB_RESULT_PATH;
-extern std::string OUTPUT_FOLDER;
-extern std::string BRIEF_PATTERN_FILE;
-extern std::string VINS_RESULT_PATH;
-extern std::string VOCABULARY_PATH;
-extern std::string SEGMENT_MODEL_FILE;
+extern string EX_CALIB_RESULT_PATH;
+extern string OUTPUT_FOLDER;
+extern string BRIEF_PATTERN_FILE;
+extern string VINS_RESULT_PATH;
+extern string VOCABULARY_PATH;
+extern string SEGMENT_MODEL_FILE;
 
 // mutex lock
-extern std::mutex mutex_image;
-extern std::mutex mutex_relocation;
-extern std::mutex mutex_estimator;
-extern std::mutex mutex_loopfusion;
-extern std::mutex mutex_segment;
-extern std::mutex mutex_keyframe;
-extern std::mutex mutex_optimize;
-extern std::mutex mutex_drift;
+extern mutex mutex_image;
+extern mutex mutex_relocation;
+extern mutex mutex_estimator;
+extern mutex mutex_loopfusion;
+extern mutex mutex_segment;
+extern mutex mutex_keyframe;
+extern mutex mutex_optimize;
+extern mutex mutex_drift;
 
 // thread
-extern std::thread thread_estimator;
-extern std::thread thread_loopfusion;
-extern std::thread thread_segment;
-extern std::thread thread_optimize;
+extern thread thread_estimator;
+extern thread thread_loopfusion;
+extern thread thread_segment;
+extern thread thread_optimize;
 
 /**
  * @brief: set vio estimator parameters from config file
  */
-void readParameters(const std::string &config_file);
+void readParameters(const string &config_file);
 
 /**
  * @brief: ceres solver parameters dims

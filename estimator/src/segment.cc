@@ -17,7 +17,7 @@ static void erode(cv::Mat &img) {
 }
 
 YOLOv8_seg::YOLOv8_seg() :
-    init_thread_flag(false) {
+    init_thread_flag(false), segment_finish_flag(false) {
 }
 
 YOLOv8_seg::~YOLOv8_seg() {
@@ -36,11 +36,11 @@ YOLOv8_seg::~YOLOv8_seg() {
 
 void YOLOv8_seg::setParameter() {
     // find engine file path
-    std::ifstream file(SEGMENT_MODEL_FILE, std::ios::binary);
+    ifstream file(SEGMENT_MODEL_FILE, ios::binary);
     assert(file.good());
-    file.seekg(0, std::ios::end);
+    file.seekg(0, ios::end);
     auto size = file.tellg();
-    file.seekg(0, std::ios::beg);
+    file.seekg(0, ios::beg);
     char *trtModelStream = new char[size];
     assert(trtModelStream);
     file.read(trtModelStream, size);
@@ -65,7 +65,7 @@ void YOLOv8_seg::setParameter() {
         Binding binding;
         nvinfer1::Dims dims;
         nvinfer1::DataType dtype = this->engine->getBindingDataType(i);
-        std::string name = this->engine->getBindingName(i);
+        string name = this->engine->getBindingName(i);
         binding.name = name;
         binding.dsize = typeToSize(dtype);
 
@@ -94,9 +94,9 @@ void YOLOv8_seg::setParameter() {
     // wram up
     makePipe();
 
-    if (MULTIPLE_THREAD && !init_thread_flag) {
+    if (!init_thread_flag) {
         init_thread_flag = true;
-        thread_segment = std::thread(&YOLOv8_seg::inferenceProcess, this);
+        thread_segment = thread(&YOLOv8_seg::inferenceProcess, this);
     }
 }
 
@@ -105,7 +105,7 @@ void YOLOv8_seg::inferenceProcess() {
         double time = 0;
         cv::Mat img, mask;
         cv::Size size = cv::Size{640, 640};
-        std::vector<Object> objs;
+        vector<Object> objs;
         std_msgs::Header header;
         // extract the oldest frame and dequeue it
         mutex_segment.lock();
@@ -128,6 +128,7 @@ void YOLOv8_seg::inferenceProcess() {
                 cv_bridge::CvImage(header, "mono8", mask).toImageMsg();
             mutex_segment.lock();
             mask_buf.push(mask_msg);
+            segment_finish_flag = true;
             mutex_segment.unlock();
             pubSemanticMask(mask, header);
         }
@@ -205,9 +206,9 @@ void YOLOv8_seg::letterBox(
     float height = image.rows;
     float width = image.cols;
 
-    float r = std::min(inp_h / height, inp_w / width);
-    int padw = std::round(width * r);
-    int padh = std::round(height * r);
+    float r = min(inp_h / height, inp_w / width);
+    int padw = round(width * r);
+    int padh = round(height * r);
 
     cv::Mat tmp;
     if ((int)width != padw || (int)height != padh) {
@@ -221,10 +222,10 @@ void YOLOv8_seg::letterBox(
 
     dw /= 2.0f;
     dh /= 2.0f;
-    int top = int(std::round(dh - 0.1f));
-    int bottom = int(std::round(dh + 0.1f));
-    int left = int(std::round(dw - 0.1f));
-    int right = int(std::round(dw + 0.1f));
+    int top = int(round(dh - 0.1f));
+    int bottom = int(round(dh + 0.1f));
+    int left = int(round(dw - 0.1f));
+    int right = int(round(dw + 0.1f));
 
     cv::copyMakeBorder(tmp, tmp, top, bottom, left, right, cv::BORDER_CONSTANT, {114, 114, 114});
 
@@ -264,7 +265,7 @@ void YOLOv8_seg::inference() {
     cudaStreamSynchronize(this->stream);
 }
 
-void YOLOv8_seg::postProcess(std::vector<Object> &objs,
+void YOLOv8_seg::postProcess(vector<Object> &objs,
                              float score_thres,
                              float iou_thres,
                              int topk,
@@ -287,11 +288,11 @@ void YOLOv8_seg::postProcess(std::vector<Object> &objs,
     cv::Mat protos = cv::Mat(seg_channels, seg_h * seg_w, CV_32F,
                              static_cast<float *>(this->host_ptrs[1]));
 
-    std::vector<int> labels;
-    std::vector<float> scores;
-    std::vector<cv::Rect> bboxes;
-    std::vector<cv::Mat> mask_confs;
-    std::vector<int> indices;
+    vector<int> labels;
+    vector<float> scores;
+    vector<cv::Rect> bboxes;
+    vector<cv::Mat> mask_confs;
+    vector<int> indices;
 
     for (int i = 0; i < num_anchors; i++) {
         float *ptr = output + i * num_channels;
@@ -339,7 +340,7 @@ void YOLOv8_seg::postProcess(std::vector<Object> &objs,
         cv::Mat matmulRes = (masks * protos).t();
         cv::Mat maskMat = matmulRes.reshape(cnt, {seg_w, seg_h});
 
-        std::vector<cv::Mat> maskChannels;
+        vector<cv::Mat> maskChannels;
         cv::split(maskMat, maskChannels);
         int scale_dw = dw / input_w * seg_w;
         int scale_dh = dh / input_h * seg_h;
@@ -359,7 +360,7 @@ void YOLOv8_seg::postProcess(std::vector<Object> &objs,
     }
 }
 
-void YOLOv8_seg::drawObjects(const cv::Mat &image, cv::Mat &res, const std::vector<Object> &objs) {
+void YOLOv8_seg::drawObjects(const cv::Mat &image, cv::Mat &res, const vector<Object> &objs) {
     res = cv::Mat::zeros(image.rows, image.cols, CV_8UC1);
     cv::Mat mask = image.clone();
     for (auto &obj : objs) {

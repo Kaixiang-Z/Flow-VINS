@@ -27,9 +27,9 @@ void GlobalSFM::triangulatePoint(Matrix<double, 3, 4> &Pose0,
 }
 
 bool GlobalSFM::solveFrameByPnP(Matrix3d &R_initial, Vector3d &P_initial, int i,
-                                std::vector<SFMFeature> &sfm_feature) const {
-    std::vector<cv::Point2f> pts_2_vector;
-    std::vector<cv::Point3f> pts_3_vector;
+                                vector<SFMFeature> &sfm_feature) const {
+    vector<cv::Point2f> pts_2_vector;
+    vector<cv::Point3f> pts_3_vector;
     // traverse feature points
     for (auto j = 0; j < m_feature_num; j++) {
         // skip sfm feature points which haven't been triangulated
@@ -55,7 +55,7 @@ bool GlobalSFM::solveFrameByPnP(Matrix3d &R_initial, Vector3d &P_initial, int i,
     }
     // if feature points observed from the current frame is too few
     if (pts_2_vector.size() < 15) {
-        std::cout << "unstable features tracking, please slowly move you device!" << std::endl;
+        cout << "unstable features tracking, please slowly move you device!" << endl;
         if (pts_2_vector.size() < 10)
             return false;
     }
@@ -85,7 +85,7 @@ bool GlobalSFM::solveFrameByPnP(Matrix3d &R_initial, Vector3d &P_initial, int i,
 
 void GlobalSFM::triangulateTwoFrames(int frame0, Matrix<double, 3, 4> &Pose0,
                                      int frame1, Matrix<double, 3, 4> &Pose1,
-                                     std::vector<SFMFeature> &sfm_feature) const {
+                                     vector<SFMFeature> &sfm_feature) const {
     assert(frame0 != frame1);
     // traverse feature points
     for (auto j = 0; j < m_feature_num; j++) {
@@ -122,8 +122,8 @@ void GlobalSFM::triangulateTwoFrames(int frame0, Matrix<double, 3, 4> &Pose0,
 
 bool GlobalSFM::construct(int frame_num, Quaterniond *Q, Vector3d *T, int l,
                           const Matrix3d &relative_R, const Vector3d &relative_T,
-                          std::vector<SFMFeature> &sfm_feature,
-                          std::map<int, Vector3d> &sfm_tracked_points) {
+                          vector<SFMFeature> &sfm_feature,
+                          map<int, Vector3d> &sfm_tracked_points) {
     m_feature_num = static_cast<int>(sfm_feature.size());
     // initial two view, set frame l to reference coordinate (world coordinate), Q[l] | T[l]: c0 frame, Q[frame-1] | T[frame-1]: R(c0<--ck), P(c0<--ck)
     Q[l].setIdentity();
@@ -289,14 +289,14 @@ bool GlobalSFM::construct(int frame_num, Quaterniond *Q, Vector3d *T, int l,
     return true;
 }
 
-void solveGyroscopeBias(std::map<double, ImageFrame> &all_image_frame, Vector3d *Bgs) {
+void solveGyroscopeBias(map<double, ImageFrame> &all_image_frame, Vector3d *Bgs) {
     Matrix3d A;
     Vector3d b;
     Vector3d delta_bg;
     A.setZero();
     b.setZero();
-    std::map<double, ImageFrame>::iterator frame_i;
-    std::map<double, ImageFrame>::iterator frame_j;
+    map<double, ImageFrame>::iterator frame_i;
+    map<double, ImageFrame>::iterator frame_j;
     // rotation between frame i and frame j calculated by visual should be equal to pre-integration value
     // traverse from the first frame to the penultimate frame in sliding window
     for (frame_i = all_image_frame.begin(); next(frame_i) != all_image_frame.end(); frame_i++) {
@@ -346,7 +346,7 @@ MatrixXd tangentBasis(Vector3d &g0) {
     return bc;
 }
 
-void refineGravity(std::map<double, ImageFrame> &all_image_frame, Vector3d &g, VectorXd &x) {
+void refineGravity(map<double, ImageFrame> &all_image_frame, Vector3d &g, VectorXd &x) {
     // g0 = normalized g_c0 * norm if g_world, to ensure norm of g_c0 is equal to G
     Vector3d g0 = g.normalized() * G.norm();
     Vector3d lx, ly;
@@ -361,8 +361,8 @@ void refineGravity(std::map<double, ImageFrame> &all_image_frame, Vector3d &g, V
     VectorXd b(n_state);
     b.setZero();
 
-    std::map<double, ImageFrame>::iterator frame_i;
-    std::map<double, ImageFrame>::iterator frame_j;
+    map<double, ImageFrame>::iterator frame_i;
+    map<double, ImageFrame>::iterator frame_j;
     // iterate 4 times to get optimized g vector
     for (auto k = 0; k < 4; k++) {
         MatrixXd lxly(3, 2);
@@ -428,7 +428,7 @@ void refineGravity(std::map<double, ImageFrame> &all_image_frame, Vector3d &g, V
     g = g0;
 }
 
-bool linearAlignment(std::map<double, ImageFrame> &all_image_frame, Vector3d &g, VectorXd &x) {
+bool linearAlignment(map<double, ImageFrame> &all_image_frame, Vector3d &g, VectorXd &x) {
     int all_frame_count = static_cast<int>(all_image_frame.size());
     // optimize parameters: v0,...,vn, g_c0, scale
     int n_state = DEPTH ? (all_frame_count * 3 + 3) : (all_frame_count * 3 + 3 + 1);
@@ -440,8 +440,8 @@ bool linearAlignment(std::map<double, ImageFrame> &all_image_frame, Vector3d &g,
     VectorXd b(n_state);
     b.setZero();
     // 1. initialize speed, gravity and scale factor
-    std::map<double, ImageFrame>::iterator frame_i;
-    std::map<double, ImageFrame>::iterator frame_j;
+    map<double, ImageFrame>::iterator frame_i;
+    map<double, ImageFrame>::iterator frame_j;
     int i = 0;
     // traverse from the first frame to the penultimate frame in sliding window
     for (frame_i = all_image_frame.begin(); next(frame_i) != all_image_frame.end(); frame_i++, i++) {
@@ -523,7 +523,7 @@ bool linearAlignment(std::map<double, ImageFrame> &all_image_frame, Vector3d &g,
     return true;
 }
 
-bool visualImuAlignment(std::map<double, ImageFrame> &all_image_frame, Vector3d *Bgs, Vector3d &g, VectorXd &x) {
+bool visualImuAlignment(map<double, ImageFrame> &all_image_frame, Vector3d *Bgs, Vector3d &g, VectorXd &x) {
     // update gyro bias and update pre-integration
     solveGyroscopeBias(all_image_frame, Bgs);
     // initialize speed, gravity and scale factor

@@ -96,7 +96,7 @@ void pubSemanticImage(const cv::Mat &img, const std_msgs::Header &header);
 
 class CameraPoseVisualization {
 public:
-    std::string marker_ns;
+    string marker_ns;
     /**
      * @brief: set camera color and instance
      */
@@ -138,7 +138,7 @@ public:
     void add_loopedge(const Vector3d &p0, const Vector3d &p1);
 
 private:
-    std::vector<visualization_msgs::Marker> markers;
+    vector<visualization_msgs::Marker> markers;
     std_msgs::ColorRGBA image_boundary_color;
     std_msgs::ColorRGBA optical_center_connector_color;
     double scale;

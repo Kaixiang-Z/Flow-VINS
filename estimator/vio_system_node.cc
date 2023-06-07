@@ -18,8 +18,8 @@
 using namespace FLOW_VINS;
 
 static Estimator estimator;
-static std::queue<sensor_msgs::ImageConstPtr> img0_buf;
-static std::queue<sensor_msgs::ImageConstPtr> img1_buf;
+static queue<sensor_msgs::ImageConstPtr> img0_buf;
+static queue<sensor_msgs::ImageConstPtr> img1_buf;
 
 /**
  * @brief: subscribe IMU topic data and sent it to estimator
@@ -46,10 +46,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr &image_msg) {
     mutex_image.lock();
     img0_buf.push(image_msg);
     mutex_image.unlock();
+    // segment freqence control
     mutex_segment.lock();
     estimator.yolo.image_buf.push(image_msg);
     mutex_segment.unlock();
-
     // detect unstable camera stream
     if (estimator.last_image_time == -1)
         image_msg->header.stamp.toSec();
@@ -99,13 +99,14 @@ void process() {
                     if (USE_SEGMENTATION) {
                         while (!estimator.yolo.semanticAvailable(time)) {
                             ROS_INFO("wait for semantic ...");
-                            std::chrono::milliseconds dura(5);
-                            std::this_thread::sleep_for(dura);
+                            chrono::milliseconds dura(5);
+                            this_thread::sleep_for(dura);
                         }
                         mutex_segment.lock();
                         // get semantic image
                         mask = getGrayImageFromMsg(estimator.yolo.mask_buf.front());
                         estimator.yolo.mask_buf.pop();
+                        estimator.yolo.segment_finish_flag = false;
                         mutex_segment.unlock();
                     }
                 }
@@ -131,8 +132,8 @@ void process() {
             }
         }
 
-        std::chrono::milliseconds dura(2);
-        std::this_thread::sleep_for(dura);
+        chrono::milliseconds dura(2);
+        this_thread::sleep_for(dura);
     }
 }
 
@@ -145,10 +146,10 @@ int main(int argc, char *argv[]) {
     ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
 
     if (argc != 2) {
-        std::cout << "please input: rosrun vio_system vio_system_node [config file] \n"
-                     "for example: rosrun vio_system vio_system_node "
-                     "src/Flow-VINS/config/euroc_stereo_imu_config.yaml "
-                  << std::endl;
+        cout << "please input: rosrun vio_system vio_system_node [config file] \n"
+                "for example: rosrun vio_system vio_system_node "
+                "src/Flow-VINS/config/euroc_stereo_imu_config.yaml "
+             << endl;
         return 1;
     }
     // read configuration file data
@@ -167,7 +168,7 @@ int main(int argc, char *argv[]) {
     ros::Subscriber sub_img1 =
         n.subscribe<sensor_msgs::Image>(IMAGE1_TOPIC, 2000, [&](const sensor_msgs::ImageConstPtr &msg) {mutex_image.lock(); img1_buf.push(msg); mutex_image.unlock(); });
     // synchronize process
-    std::thread thread_synchronize = std::thread(process);
+    thread thread_synchronize = thread(process);
 
     ros::spin();
     return 0;

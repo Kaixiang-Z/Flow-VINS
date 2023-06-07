@@ -54,22 +54,22 @@ public:
         }
         switch (severity) {
         case nvinfer1::ILogger::Severity::kINTERNAL_ERROR:
-            std::cerr << "INTERNAL_ERROR: ";
+            cerr << "INTERNAL_ERROR: ";
             break;
         case nvinfer1::ILogger::Severity::kERROR:
-            std::cerr << "ERROR: ";
+            cerr << "ERROR: ";
             break;
         case nvinfer1::ILogger::Severity::kWARNING:
-            std::cerr << "WARNING: ";
+            cerr << "WARNING: ";
             break;
         case nvinfer1::ILogger::Severity::kINFO:
-            std::cerr << "INFO: ";
+            cerr << "INFO: ";
             break;
         default:
-            std::cerr << "VERBOSE: ";
+            cerr << "VERBOSE: ";
             break;
         }
-        std::cerr << msg << std::endl;
+        cerr << msg << endl;
     }
 };
 
@@ -119,7 +119,7 @@ struct Binding {
     size_t size = 1;
     size_t dsize = 1;
     nvinfer1::Dims dims;
-    std::string name;
+    string name;
 };
 
 struct Object {
@@ -183,7 +183,7 @@ public:
     /**
      * @brief: main process of post process, from tensor to mat
      */
-    void postProcess(std::vector<Object> &objs,
+    void postProcess(vector<Object> &objs,
                      float score_thres = 0.25f,
                      float iou_thres = 0.65f,
                      int topk = 100,
@@ -194,21 +194,22 @@ public:
     /**
      * @brief:  main process of darw segmentation mask in orin image
      */
-    static void drawObjects(const cv::Mat &image, cv::Mat &res, const std::vector<Object> &objs);
+    static void drawObjects(const cv::Mat &image, cv::Mat &res, const vector<Object> &objs);
 
     int num_bindings;
     int num_inputs = 0;
     int num_outputs = 0;
-    std::vector<Binding> input_bindings;
-    std::vector<Binding> output_bindings;
-    std::vector<void *> host_ptrs;
-    std::vector<void *> device_ptrs;
+    vector<Binding> input_bindings;
+    vector<Binding> output_bindings;
+    vector<void *> host_ptrs;
+    vector<void *> device_ptrs;
 
     PreParam pparam;
 
     bool init_thread_flag;
-    std::queue<sensor_msgs::ImageConstPtr> image_buf;
-    std::queue<sensor_msgs::ImageConstPtr> mask_buf;
+    bool segment_finish_flag;
+    queue<sensor_msgs::ImageConstPtr> image_buf;
+    queue<sensor_msgs::ImageConstPtr> mask_buf;
 
 private:
     nvinfer1::ICudaEngine *engine = nullptr;

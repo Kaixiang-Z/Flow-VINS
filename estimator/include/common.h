@@ -13,6 +13,7 @@
 #include <chrono>
 
 using namespace Eigen;
+using namespace std;
 namespace FLOW_VINS {
 
 /**
@@ -40,17 +41,17 @@ public:
     }
 
     void tic() {
-        start = std::chrono::system_clock::now();
+        start = chrono::system_clock::now();
     }
 
     double toc() {
-        end = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed_seconds = end - start;
+        end = chrono::system_clock::now();
+        chrono::duration<double> elapsed_seconds = end - start;
         return elapsed_seconds.count() * 1000;
     }
 
 private:
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    chrono::time_point<chrono::system_clock> start, end;
 };
 
 /**

@@ -62,6 +62,7 @@ freq_ctrl_num: 2
 max_solver_time : 0.04   #最大求解器迭代时间（毫秒），保证实时
 max_num_iterations : 8    #最大求解器迭代次数，以保证实时
 keyframe_parallax : 10.0  #关键帧选择阈值（像素）
+max_solve_cnt: 60        # max solve point number
  
 # imu 参数 你提供的参数越准确，性能越好
 acc_n : 0.1           #加速度计测量噪声标准偏差。#0.2 0.04

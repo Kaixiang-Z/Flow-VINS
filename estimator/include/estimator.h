@@ -112,7 +112,7 @@ public:
      * @brief: imput relocate frame match points, used for relocate
      */
     void inputReloFrame(double frame_stamp, int frame_index,
-                        std::vector<Vector3d> &match_points, Vector3d relo_t,
+                        vector<Vector3d> &match_points, Vector3d relo_t,
                         Matrix3d relo_r);
 
     /**
@@ -125,9 +125,7 @@ public:
     /**
      * @brief: main process of VIO system, initial and backend solver
      */
-    void processImage(
-        std::map<int, std::vector<std::pair<int, Matrix<double, 7, 1>>>> &image,
-        double header);
+    void processImage(FeatureFrame &image, double header);
 
     /**
      * @brief: transfer process IMU and process Image functions, publish relate topic data
@@ -147,7 +145,7 @@ public:
     /**
      * @brief: initialize first IMU frame pose, alignment first acceleration with gravity vector to get initial rotation
      */
-    void initFirstImuPose(std::vector<std::pair<double, Vector3d>> &acc_vector);
+    void initFirstImuPose(vector<pair<double, Vector3d>> &acc_vector);
 
     /**
      * @brief: check if IMU data is available
@@ -158,8 +156,8 @@ public:
      * @brief: from the IMU data queue, extract the data of the time period (t0, t1)
      */
     bool getImuInterval(double t0, double t1,
-                        std::vector<std::pair<double, Vector3d>> &acc_vector,
-                        std::vector<std::pair<double, Vector3d>> &gyr_vector);
+                        vector<pair<double, Vector3d>> &acc_vector,
+                        vector<pair<double, Vector3d>> &gyr_vector);
 
     /**
      * @brief: check IMU observibility
@@ -169,7 +167,7 @@ public:
     /**
      * @brief: build sfm_feature for SFM 
      */
-    void buildSfmFeature(std::vector<SFMFeature> &sfm_feature);
+    void buildSfmFeature(vector<SFMFeature> &sfm_feature);
 
     /**
      * @brief: find base frame l in sliding windows and get relative rotation and translation between frame l and the newest frame
@@ -179,12 +177,12 @@ public:
     /**
      * @brief: recover Matrix R and T from two frames match points
      */
-    bool solveRelativeRT(const std::vector<std::pair<Vector3d, Vector3d>> &corres, Matrix3d &rotation, Vector3d &translation);
+    bool solveRelativeRT(const vector<pair<Vector3d, Vector3d>> &corres, Matrix3d &rotation, Vector3d &translation);
 
     /**
      * @brief: get rotation and translation for all frame and 3D coordinates of all features in frame l without scaler
      */
-    bool solvePnPForAllFrame(Quaterniond Q[], Vector3d T[], std::map<int, Vector3d> &sfm_tracked_points);
+    bool solvePnPForAllFrame(Quaterniond Q[], Vector3d T[], map<int, Vector3d> &sfm_tracked_points);
 
     /**
      * @brief: loosely coupled IMU-visual initialization 
@@ -278,7 +276,7 @@ public:
     /**
      * @brief: main process of moving consistency check 
      */
-    void movingConsistencyCheck(std::set<int> &remove_index);
+    void movingConsistencyCheck(set<int> &remove_index);
 
     /**
      * @brief: convert estimator data to loop fusion data
@@ -312,14 +310,13 @@ public:
     };
 
     // common data structures
-    std::queue<std::pair<double, Vector3d>> acc_buf;
-    std::queue<std::pair<double, Vector3d>> gyr_buf;
-    std::queue<std::pair<double, std::map<int, std::vector<std::pair<int, Matrix<double, 7, 1>>>>>> feature_buf;
+    queue<pair<double, Vector3d>> acc_buf;
+    queue<pair<double, Vector3d>> gyr_buf;
+    queue<pair<double, FeatureFrame>> feature_buf;
     double prev_time{}, cur_time{};
     bool open_ex_estimation{};
 
     // common class in vio estimator system
-    FeatureTracker feature_tracker;
     FeatureManager feature_manager;
     //Backend backend;
 
@@ -344,20 +341,20 @@ public:
     double headers[(WINDOW_SIZE + 1)]{};
 
     // IMU pre-integration variable
-    std::map<double, ImageFrame> all_image_frame;
+    map<double, ImageFrame> all_image_frame;
     IntegrationBase *tmp_pre_integration{};
     IntegrationBase *pre_integrations[(WINDOW_SIZE + 1)]{};
     Vector3d acc_0, gyr_0;
 
-    std::vector<double> dt_buf[(WINDOW_SIZE + 1)];
-    std::vector<Vector3d> linear_acceleration_buf[(WINDOW_SIZE + 1)];
-    std::vector<Vector3d> angular_velocity_buf[(WINDOW_SIZE + 1)];
+    vector<double> dt_buf[(WINDOW_SIZE + 1)];
+    vector<Vector3d> linear_acceleration_buf[(WINDOW_SIZE + 1)];
+    vector<Vector3d> angular_velocity_buf[(WINDOW_SIZE + 1)];
 
     // frame position in sliding window and class for marginalization
-    std::vector<Vector3d> key_poses;
+    vector<Vector3d> key_poses;
     double initial_timestamp{};
     MarginalizationInfo *last_marginalization_info{};
-    std::vector<double *> last_marginalization_parameter_blocks;
+    vector<double *> last_marginalization_parameter_blocks;
 
     // parameters in the sliding windows stored in array, used for ceres optimize
     double para_pose[WINDOW_SIZE + 1][SIZE_POSE]{};
@@ -365,6 +362,9 @@ public:
     double para_feature[NUM_OF_F][SIZE_FEATURE]{};
     double para_ex_pose[2][SIZE_POSE]{};
     double para_td[1][1]{};
+
+    vector<int> param_feature_id;
+    map<int, int> param_feature_id_to_index;
 
     // state flag
     bool init_first_pose_flag{};
@@ -379,7 +379,7 @@ public:
     double relo_frame_stamp{};
     double relo_frame_index{};
     int relo_frame_local_index{};
-    std::vector<Vector3d> relo_match_points;
+    vector<Vector3d> relo_match_points;
     double relo_pose[SIZE_POSE]{};
     Matrix3d drift_correct_r;
     Vector3d drift_correct_t;
@@ -390,9 +390,9 @@ public:
     double relo_relative_yaw{};
 
     // for loop fusion
-    std::queue<std::pair<double, cv::Mat>> loop_image_buf;
-    std::queue<std::pair<double, Matrix4d>> loop_pose_buf;
-    std::queue<std::pair<double, PointCloud>> loop_point_buf;
+    queue<pair<double, cv::Mat>> loop_image_buf;
+    queue<pair<double, Matrix4d>> loop_pose_buf;
+    queue<pair<double, PointCloud>> loop_point_buf;
 
     PoseGraph pose_graph;
     int frame_index = 0;

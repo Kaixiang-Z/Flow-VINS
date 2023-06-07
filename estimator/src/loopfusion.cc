@@ -23,7 +23,7 @@ static void reduceVector(vector<Derived> &v, vector<uchar> status) {
     v.resize(j);
 }
 
-BriefExtractor::BriefExtractor(const std::string &pattern_file) {
+BriefExtractor::BriefExtractor(const string &pattern_file) {
     // loads the pattern
     cv::FileStorage fs(pattern_file.c_str(), cv::FileStorage::READ);
     if (!fs.isOpened()) throw string("Could not open file ") + pattern_file;
@@ -112,9 +112,9 @@ int KeyFrame::hammingDistance(const BRIEF::bitset &a, const BRIEF::bitset &b) {
 }
 
 bool KeyFrame::searchInAera(const BRIEF::bitset &window_descriptor,
-                            const std::vector<BRIEF::bitset> &descriptors_old,
-                            const std::vector<cv::KeyPoint> &keypoints_old,
-                            const std::vector<cv::KeyPoint> &keypoints_old_norm,
+                            const vector<BRIEF::bitset> &descriptors_old,
+                            const vector<cv::KeyPoint> &keypoints_old,
+                            const vector<cv::KeyPoint> &keypoints_old_norm,
                             cv::Point2f &best_match,
                             cv::Point2f &best_match_norm) {
     int bestDist = 128;
@@ -136,12 +136,12 @@ bool KeyFrame::searchInAera(const BRIEF::bitset &window_descriptor,
         return false;
 }
 
-void KeyFrame::searchByBRIEFDes(std::vector<cv::Point2f> &matched_2d_old,
-                                std::vector<cv::Point2f> &matched_2d_old_norm,
-                                std::vector<uchar> &status,
-                                const std::vector<BRIEF::bitset> &descriptors_old,
-                                const std::vector<cv::KeyPoint> &keypoints_old,
-                                const std::vector<cv::KeyPoint> &keypoints_old_norm) {
+void KeyFrame::searchByBRIEFDes(vector<cv::Point2f> &matched_2d_old,
+                                vector<cv::Point2f> &matched_2d_old_norm,
+                                vector<uchar> &status,
+                                const vector<BRIEF::bitset> &descriptors_old,
+                                const vector<cv::KeyPoint> &keypoints_old,
+                                const vector<cv::KeyPoint> &keypoints_old_norm) {
     // traverse brief descriptors in current frame
     for (const auto &window_brief_descriptor : window_brief_descriptors) {
         cv::Point2f pt(0.f, 0.f);
@@ -230,8 +230,8 @@ bool KeyFrame::findConnection(KeyFrame *old_kf, queue<RelocationFrame> &relo_fra
 }
 
 void KeyFrame::PnPRANSAC(const vector<cv::Point2f> &matched_2d_old_norm,
-                         const std::vector<cv::Point3f> &matched_3d,
-                         std::vector<uchar> &status,
+                         const vector<cv::Point3f> &matched_3d,
+                         vector<uchar> &status,
                          Vector3d &PnP_T_old, Matrix3d &PnP_R_old) {
     cv::Mat r, rvec, t, D, tmp_r;
     cv::Mat K = (cv::Mat_<double>(3, 3) << 1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0);
@@ -332,7 +332,7 @@ void PoseGraph::setParameter() {
     setIMUFlag(USE_IMU);
 }
 
-void PoseGraph::loadVocabulary(const std::string &voc_path) {
+void PoseGraph::loadVocabulary(const string &voc_path) {
     voc = new BriefVocabulary(voc_path);
     db.setVocabulary(*voc, false, 0);
 }
@@ -340,11 +340,11 @@ void PoseGraph::loadVocabulary(const std::string &voc_path) {
 void PoseGraph::setIMUFlag(bool _use_imu) {
     use_imu = _use_imu;
     if (use_imu) {
-        std::cout << "VIO input, perfrom 4 DoF (x, y, z, yaw) pose graph optimization" << std::endl;
-        thread_optimize = std::thread(&PoseGraph::optimize4DoF, this);
+        cout << "VIO input, perfrom 4 DoF (x, y, z, yaw) pose graph optimization" << endl;
+        thread_optimize = thread(&PoseGraph::optimize4DoF, this);
     } else {
-        std::cout << "VO input, perfrom 6 DoF pose graph optimization" << std::endl;
-        thread_optimize = std::thread(&PoseGraph::optimize6DoF, this);
+        cout << "VO input, perfrom 6 DoF pose graph optimization" << endl;
+        thread_optimize = thread(&PoseGraph::optimize6DoF, this);
     }
 }
 
@@ -696,8 +696,8 @@ void PoseGraph::optimize4DoF() {
         }
 
         // sleep 2000ms
-        std::chrono::milliseconds dura(2000);
-        std::this_thread::sleep_for(dura);
+        chrono::milliseconds dura(2000);
+        this_thread::sleep_for(dura);
     }
 }
 
@@ -855,8 +855,8 @@ void PoseGraph::optimize6DoF() {
             updatePath();
         }
         // sleep 2000ms
-        std::chrono::milliseconds dura(2000);
-        std::this_thread::sleep_for(dura);
+        chrono::milliseconds dura(2000);
+        this_thread::sleep_for(dura);
     }
 }
 

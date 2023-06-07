@@ -25,7 +25,7 @@ IntegrationBase::IntegrationBase(const Vector3d &_acc_0, const Vector3d &_gyr_0,
     acc_0{_acc_0},
     gyr_0{_gyr_0},
     linearized_acc{_acc_0}, linearized_gyr{_gyr_0},
-    linearized_ba{std::move(_linearized_ba)}, linearized_bg{std::move(_linearized_bg)},
+    linearized_ba{move(_linearized_ba)}, linearized_bg{move(_linearized_bg)},
     jacobian{Matrix<double, 15, 15>::Identity()}, covariance{Matrix<double, 15, 15>::Zero()}, sum_dt{0.0},
     delta_p{Vector3d::Zero()}, delta_q{Quaterniond::Identity()}, delta_v{Vector3d::Zero()} {
     // measure the noise covariance which is considered to be fixed at each time instant
@@ -301,8 +301,8 @@ ProjectionOneFrameTwoCamFactor::ProjectionOneFrameTwoCamFactor(
     Vector3d _pts_i, Vector3d _pts_j,
     const Vector2d &_velocity_i, const Vector2d &_velocity_j,
     const double _td_i, const double _td_j) :
-    pts_i(std::move(_pts_i)),
-    pts_j(std::move(_pts_j)), td_i(_td_i), td_j(_td_j) {
+    pts_i(move(_pts_i)),
+    pts_j(move(_pts_j)), td_i(_td_i), td_j(_td_j) {
     velocity_i.x() = _velocity_i.x();
     velocity_i.y() = _velocity_i.y();
     velocity_i.z() = 0;
@@ -398,8 +398,8 @@ ProjectionTwoFrameOneCamFactor::ProjectionTwoFrameOneCamFactor(
     Vector3d _pts_i, Vector3d _pts_j,
     const Vector2d &_velocity_i, const Vector2d &_velocity_j,
     const double _td_i, const double _td_j) :
-    pts_i(std::move(_pts_i)),
-    pts_j(std::move(_pts_j)), td_i(_td_i), td_j(_td_j) {
+    pts_i(move(_pts_i)),
+    pts_j(move(_pts_j)), td_i(_td_i), td_j(_td_j) {
     velocity_i.x() = _velocity_i.x();
     velocity_i.y() = _velocity_i.y();
     velocity_i.z() = 0;
@@ -514,8 +514,8 @@ ProjectionTwoFrameTwoCamFactor::ProjectionTwoFrameTwoCamFactor(
     Vector3d _pts_i, Vector3d _pts_j,
     const Vector2d &_velocity_i, const Vector2d &_velocity_j,
     const double _td_i, const double _td_j) :
-    pts_i(std::move(_pts_i)),
-    pts_j(std::move(_pts_j)), td_i(_td_i), td_j(_td_j) {
+    pts_i(move(_pts_i)),
+    pts_j(move(_pts_j)), td_i(_td_i), td_j(_td_j) {
     velocity_i.x() = _velocity_i.x();
     velocity_i.y() = _velocity_i.y();
     velocity_i.z() = 0;
@@ -726,7 +726,7 @@ void ResidualBlockInfo::Evaluate() {
     // resize to actual residual dimension
     residuals.resize(cost_function->num_residuals());
     // get parameter nums in each parameter block
-    std::vector<int> block_sizes = cost_function->parameter_block_sizes();
+    vector<int> block_sizes = cost_function->parameter_block_sizes();
     // get nums of parameter block
     raw_jacobians = new double *[block_sizes.size()];
     jacobians.resize(block_sizes.size());
@@ -784,9 +784,9 @@ void MarginalizationInfo::addResidualBlockInfo(ResidualBlockInfo *residual_block
     factors.emplace_back(residual_block_info);
 
     // get residual parameter blocks
-    std::vector<double *> &parameter_blocks = residual_block_info->parameter_blocks;
+    vector<double *> &parameter_blocks = residual_block_info->parameter_blocks;
     // get residual parameter blocks size
-    std::vector<int> parameter_block_sizes = residual_block_info->cost_function->parameter_block_sizes();
+    vector<int> parameter_block_sizes = residual_block_info->cost_function->parameter_block_sizes();
 
     // traverse each parameter block
     for (auto i = 0; i < residual_block_info->parameter_blocks.size(); i++) {
@@ -814,7 +814,7 @@ void MarginalizationInfo::preMarginalize() {
         it->Evaluate();
 
         // traverse variable after optimization
-        std::vector<int> block_sizes = it->cost_function->parameter_block_sizes();
+        vector<int> block_sizes = it->cost_function->parameter_block_sizes();
         for (int i = 0; i < static_cast<int>(block_sizes.size()); i++) {
             // parameter block start address
             long addr = reinterpret_cast<long>(it->parameter_blocks[i]);
@@ -884,7 +884,7 @@ void MarginalizationInfo::marginalize() {
     n = pos - m;
     if (m == 0) {
         valid = false;
-        std::cout << "no variable to be marginalized, unstable tracking..." << std::endl;
+        cout << "no variable to be marginalized, unstable tracking..." << endl;
         return;
     }
 
@@ -957,10 +957,10 @@ void MarginalizationInfo::marginalize() {
     linearized_residuals = S_inv_sqrt.asDiagonal() * saes2.eigenvectors().transpose() * b;
 }
 
-std::vector<double *> MarginalizationInfo::getParameterBlocks(std::unordered_map<long, double *> &addr_shift) {
+vector<double *> MarginalizationInfo::getParameterBlocks(unordered_map<long, double *> &addr_shift) {
     // after Marg, some data of the variable is reserved, which is only used for the next optimization,
     // and the prior residual is added, which is not used for the next Marg
-    std::vector<double *> keep_block_addr;
+    vector<double *> keep_block_addr;
     keep_block_size.clear();
     keep_block_idx.clear();
     keep_block_data.clear();

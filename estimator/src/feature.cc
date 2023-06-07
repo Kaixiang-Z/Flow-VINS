@@ -13,7 +13,7 @@ namespace FLOW_VINS {
  * @brief: delete variables in vector which value is equal to zero
  */
 template <typename T>
-static void reduceVector(std::vector<T> &v, std::vector<uchar> status) {
+static void reduceVector(vector<T> &v, vector<uchar> status) {
     int j = 0;
     for (auto i = 0; i < v.size(); ++i) {
         if (status[i])
@@ -34,15 +34,15 @@ void FeatureTracker::setMask() {
     mask = cv::Mat(row, col, CV_8UC1, cv::Scalar(255));
 
     // prefer to keep features that are tracked for long time
-    std::vector<std::pair<int, std::pair<cv::Point2f, int>>> cnt_pts_id;
+    vector<pair<int, pair<cv::Point2f, int>>> cnt_pts_id;
 
     for (auto i = 0; i < cur_pts.size(); i++)
-        cnt_pts_id.emplace_back(track_cnt[i], std::make_pair(cur_pts[i], ids[i]));
+        cnt_pts_id.emplace_back(track_cnt[i], make_pair(cur_pts[i], ids[i]));
 
     // sort feature point on the current frame, based on tracking times
     sort(cnt_pts_id.begin(), cnt_pts_id.end(),
-         [](const std::pair<int, std::pair<cv::Point2f, int>> &a,
-            const std::pair<int, std::pair<cv::Point2f, int>> &b) {
+         [](const pair<int, pair<cv::Point2f, int>> &a,
+            const pair<int, pair<cv::Point2f, int>> &b) {
              return a.first > b.first;
          });
 
@@ -86,16 +86,16 @@ bool FeatureTracker::inBorder(const cv::Point2f &pt) const {
     return BORDER_SIZE <= img_x && img_x < col - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < row - BORDER_SIZE;
 }
 
-void FeatureTracker::readIntrinsicParameter(const std::vector<std::string> &calib_file) {
+void FeatureTracker::readIntrinsicParameter(const vector<string> &calib_file) {
     for (const auto &i : calib_file) {
-        std::cout << "reading parameter of camera: " << i.c_str() << std::endl;
+        cout << "reading parameter of camera: " << i.c_str() << endl;
         CameraModel::CameraPtr _camera =
             CameraModel::CameraFactory::instance()->generateCameraFromYamlFile(i);
         camera.emplace_back(_camera);
     }
     if (STEREO) use_stereo_cam = true;
     if (DEPTH) use_rgbd_cam = true;
-    std::cout << "USE STEREO: " << use_stereo_cam << " USE RGBD: " << use_rgbd_cam << std::endl;
+    cout << "USE STEREO: " << use_stereo_cam << " USE RGBD: " << use_rgbd_cam << endl;
 }
 
 double FeatureTracker::distance(cv::Point2f &pt1, cv::Point2f &pt2) {
@@ -104,8 +104,7 @@ double FeatureTracker::distance(cv::Point2f &pt1, cv::Point2f &pt2) {
     return sqrt(dx * dx + dy * dy);
 }
 
-std::map<int, std::vector<std::pair<int, Matrix<double, 7, 1>>>>
-FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat &img_1) {
+FeatureFrame FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat &img_1) {
     // initial parameters
     cur_time = _cur_time;
     cur_img = img_0;
@@ -117,17 +116,15 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat
     // if it is not first frame
     if (!prev_pts.empty()) {
         // opencv optical flow tracking parameters
-        std::vector<uchar> status;
-        std::vector<float> err;
+        vector<uchar> status;
+        vector<float> err;
         // if has predict in estimator before
         if (has_prediction) {
             cur_pts = predict_pts;
             // set pyramid level as 1
             cv::calcOpticalFlowPyrLK(
-                prev_img, cur_img, prev_pts, cur_pts, status, err, cv::Size(21, 21),
-                1,
-                cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30,
-                                 0.01),
+                prev_img, cur_img, prev_pts, cur_pts, status, err, cv::Size(21, 21), 1,
+                cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01),
                 cv::OPTFLOW_USE_INITIAL_FLOW);
 
             // the number of tracking points
@@ -149,8 +146,8 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat
 
         // reverse LK optical flow calculate once
         if (FLOW_BACK) {
-            std::vector<uchar> reverse_status;
-            std::vector<cv::Point2f> reverse_pts = prev_pts;
+            vector<uchar> reverse_status;
+            vector<cv::Point2f> reverse_pts = prev_pts;
             cv::calcOpticalFlowPyrLK(
                 cur_img, prev_img, cur_pts, reverse_pts, reverse_status, err,
                 cv::Size(21, 21), 1,
@@ -168,7 +165,16 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat
         ROS_DEBUG("cur_pts size: %ld", cur_pts.size());
         // remove feature point in image border and semantic mask
         for (auto i = 0; i < cur_pts.size(); i++) {
-            if (status[i] && (!inBorder(cur_pts[i]) || inSemantic(cur_pts[i]))) {
+            if (inSemantic(cur_pts[i])) {
+                setFeatureStatus(ids[i], FeatureLevel::DYNAMIC);
+            } else {
+                if (track_cnt[ids[i]] > 3)
+                    setFeatureStatus(ids[i], FeatureLevel::OPTIMIZE);
+                else {
+                    setFeatureStatus(ids[i], FeatureLevel::UN_INITIAL);
+                }
+            }
+            if (status[i] && !inBorder(cur_pts[i])) {
                 status[i] = 0;
             }
         }
@@ -197,9 +203,9 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat
     ROS_DEBUG("n_max_cnt: %d", n_max_cnt);
     if (n_max_cnt > 0) {
         if (mask.empty())
-            std::cout << "mask is empty " << std::endl;
+            cout << "mask is empty " << endl;
         if (mask.type() != CV_8UC1)
-            std::cout << "mask type wrong " << std::endl;
+            cout << "mask type wrong " << endl;
         // extract corner points
         cv::goodFeaturesToTrack(cur_img, n_pts,
                                 MAX_CNT - static_cast<int>(cur_pts.size()), 0.01,
@@ -211,11 +217,13 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat
 
     // fill in corner points
     for (auto &p : n_pts) {
-        if (!inSemantic(p)) {
-            cur_pts.emplace_back(p);
-            ids.emplace_back(n_id++);
-            track_cnt.emplace_back(1);
-        }
+        if (inSemantic(p))
+            setFeatureStatus(n_id, FeatureLevel::DYNAMIC);
+        else
+            setFeatureStatus(n_id, FeatureLevel::UN_INITIAL);
+        cur_pts.emplace_back(p);
+        ids.emplace_back(n_id++);
+        track_cnt.emplace_back(1);
     }
 
     // get normalized camera plane points calculated from pixels, with distortion correction
@@ -232,9 +240,9 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat
         right_pts_velocity.clear();
         cur_un_right_pts_map.clear();
         if (!cur_pts.empty()) {
-            std::vector<cv::Point2f> reverseLeftPts;
-            std::vector<uchar> status, statusRightLeft;
-            std::vector<float> err;
+            vector<cv::Point2f> reverseLeftPts;
+            vector<uchar> status, statusRightLeft;
+            vector<float> err;
             // cur left ---- cur right
             cv::calcOpticalFlowPyrLK(cur_img, right_img, cur_pts, cur_right_pts,
                                      status, err, cv::Size(21, 21), 3);
@@ -280,7 +288,7 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat
         prev_left_pts_map[ids[i]] = cur_pts[i];
 
     // add current frame feature points
-    std::map<int, std::vector<std::pair<int, Matrix<double, 7, 1>>>> feature_frame;
+    FeatureFrame feature_frame;
     for (auto i = 0; i < ids.size(); i++) {
         // feature id
         int feature_id = ids[i];
@@ -331,9 +339,9 @@ FeatureTracker::trackImage(double _cur_time, const cv::Mat &img_0, const cv::Mat
     return feature_frame;
 }
 
-std::vector<cv::Point2f> FeatureTracker::undistortedPts(std::vector<cv::Point2f> &pts,
-                                                        const CameraModel::CameraPtr &cam) {
-    std::vector<cv::Point2f> un_pts;
+vector<cv::Point2f> FeatureTracker::undistortedPts(vector<cv::Point2f> &pts,
+                                                   const CameraModel::CameraPtr &cam) {
+    vector<cv::Point2f> un_pts;
     for (auto &pt : pts) {
         // feature point pixel coodinate
         Vector2d a(pt.x, pt.y);
@@ -346,14 +354,14 @@ std::vector<cv::Point2f> FeatureTracker::undistortedPts(std::vector<cv::Point2f>
     return un_pts;
 }
 
-std::vector<cv::Point2f>
-FeatureTracker::ptsVelocity(std::vector<int> &ids_, std::vector<cv::Point2f> &pts,
-                            std::map<int, cv::Point2f> &cur_id_pts,
-                            std::map<int, cv::Point2f> &prev_id_pts) {
-    std::vector<cv::Point2f> pts_velocity_;
+vector<cv::Point2f>
+FeatureTracker::ptsVelocity(vector<int> &ids_, vector<cv::Point2f> &pts,
+                            map<int, cv::Point2f> &cur_id_pts,
+                            map<int, cv::Point2f> &prev_id_pts) {
+    vector<cv::Point2f> pts_velocity_;
     cur_id_pts.clear();
     for (auto i = 0; i < ids_.size(); i++) {
-        cur_id_pts.insert(std::make_pair(ids_[i], pts[i]));
+        cur_id_pts.insert(make_pair(ids_[i], pts[i]));
     }
 
     // calculate points velocity
@@ -362,7 +370,7 @@ FeatureTracker::ptsVelocity(std::vector<int> &ids_, std::vector<cv::Point2f> &pt
 
         // traverse normalized camera coordinate feature point on the current frame
         for (auto i = 0; i < pts.size(); i++) {
-            std::map<int, cv::Point2f>::iterator it;
+            map<int, cv::Point2f>::iterator it;
             it = prev_id_pts.find(ids_[i]);
             if (it != prev_id_pts.end()) {
                 // calculate velocity in normalized camera coordinate
@@ -382,7 +390,7 @@ FeatureTracker::ptsVelocity(std::vector<int> &ids_, std::vector<cv::Point2f> &pt
 
 void FeatureTracker::rejectWithF() {
     if (cur_pts.size() >= 8) {
-        std::vector<cv::Point2f> un_cur_pts(cur_pts.size()), un_prev_pts(prev_pts.size());
+        vector<cv::Point2f> un_cur_pts(cur_pts.size()), un_prev_pts(prev_pts.size());
         for (unsigned int i = 0; i < cur_pts.size(); i++) {
             Vector3d tmp_p;
             camera[0]->liftProjective(Vector2d(cur_pts[i].x, cur_pts[i].y), tmp_p);
@@ -396,7 +404,7 @@ void FeatureTracker::rejectWithF() {
             un_prev_pts[i] = cv::Point2f(tmp_p.x(), tmp_p.y());
         }
 
-        std::vector<uchar> status;
+        vector<uchar> status;
         cv::findFundamentalMat(un_cur_pts, un_prev_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status);
         int size_a = cur_pts.size();
         reduceVector(prev_pts, status);
@@ -408,10 +416,10 @@ void FeatureTracker::rejectWithF() {
     }
 }
 
-void FeatureTracker::setPrediction(std::map<int, Vector3d> &_predict_pts) {
+void FeatureTracker::setPrediction(map<int, Vector3d> &_predict_pts) {
     has_prediction = true;
     predict_pts.clear();
-    std::map<int, Vector3d>::iterator predict_it;
+    map<int, Vector3d>::iterator predict_it;
     // predict point position
     for (auto i = 0; i < ids.size(); i++) {
         int id = ids[i];
@@ -425,16 +433,20 @@ void FeatureTracker::setPrediction(std::map<int, Vector3d> &_predict_pts) {
     }
 }
 
-void FeatureTracker::removeOutliers(std::set<int> &remove_pts_ids) {
-    std::set<int>::iterator set_it;
-    std::vector<uchar> status;
+void FeatureTracker::removeOutliers(set<int> &remove_pts_ids) {
+    set<int>::iterator set_it;
+    vector<uchar> status;
     // find feature point with same id in remove set
     for (int id : ids) {
         set_it = remove_pts_ids.find(id);
-        if (set_it != remove_pts_ids.end())
+
+        if (set_it != remove_pts_ids.end()) {
             status.emplace_back(0);
-        else
+            pts_status.emplace(id, FeatureLevel::REMOVE);
+        } else {
             status.emplace_back(1);
+            pts_status.emplace(id, FeatureLevel::OPTIMIZE);
+        }
     }
     // reduce
     reduceVector(prev_pts, status);
@@ -443,10 +455,10 @@ void FeatureTracker::removeOutliers(std::set<int> &remove_pts_ids) {
 }
 
 void FeatureTracker::drawTrack(const cv::Mat &img_left, const cv::Mat &img_right,
-                               std::vector<int> &_cur_left_ids,
-                               std::vector<cv::Point2f> &_cur_left_pts,
-                               std::vector<cv::Point2f> &_cur_right_pts,
-                               std::map<int, cv::Point2f> &_prev_left_pts_map) {
+                               vector<int> &_cur_left_ids,
+                               vector<cv::Point2f> &_cur_left_pts,
+                               vector<cv::Point2f> &_cur_right_pts,
+                               map<int, cv::Point2f> &_prev_left_pts_map) {
     int cols = img_left.cols;
     // use the left image for monocular, put the left and right images together for binocular
     if (!img_right.empty() && use_stereo_cam)
@@ -457,8 +469,22 @@ void FeatureTracker::drawTrack(const cv::Mat &img_left, const cv::Mat &img_right
 
     // draw a circle for the feature points in the left picture, the number of red tracking is less, and the number of blue tracking is more
     for (auto j = 0; j < _cur_left_pts.size(); j++) {
-        double len = std::min(1.0, 1.0 * track_cnt[j] / 20);
-        cv::circle(img_track, _cur_left_pts[j], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2);
+        double len = min(1.0, 1.0 * track_cnt[j] / 20);
+        int status = 0;
+        if (pts_status.find(ids[j]) != pts_status.end()) {
+            status = pts_status[ids[j]];
+        }
+        if (status == FeatureLevel::DYNAMIC) {
+            cv::circle(img_track, _cur_left_pts[j], 2, cv::Scalar(0, 255, 255), 2);
+            //cv::putText(img_track, to_string(ids[j]), _cur_left_pts[j], cv::FONT_HERSHEY_SIMPLEX, 0.45, cv::Scalar(0, 255, 255), 1.8);
+        } else if (status == FeatureLevel::UN_INITIAL) {
+            cv::circle(img_track, _cur_left_pts[j], 2, cv::Scalar(0, 0, 255), 2);
+            //cv::putText(img_track, to_string(ids[j]), _cur_left_pts[j], cv::FONT_HERSHEY_SIMPLEX, 0.45, cv::Scalar(0, 255, 255), 1.8);
+        } else {
+            //cv::circle(img_track, _cur_left_pts[j], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2);
+            cv::circle(img_track, _cur_left_pts[j], 2, cv::Scalar(255, 0, 0), 2);
+            //cv::putText(img_track, to_string(ids[j]), _cur_left_pts[j], cv::FONT_HERSHEY_SIMPLEX, 0.45, cv::Scalar(255 * (1 - len), 0, 255 * len), 1.8);
+        }
     }
     // draw a green circle for the feature points in the right picture
     if (!img_right.empty() && use_stereo_cam) {
@@ -468,8 +494,8 @@ void FeatureTracker::drawTrack(const cv::Mat &img_left, const cv::Mat &img_right
         }
     }
 
-    // draw an arrow for feature points in the left image and aim to the position of feature points in the previous frame
-    std::map<int, cv::Point2f>::iterator map_it;
+    //draw an arrow for feature points in the left image and aim to the position of feature points in the previous frame
+    map<int, cv::Point2f>::iterator map_it;
     for (auto i = 0; i < _cur_left_ids.size(); i++) {
         int id = _cur_left_ids[i];
         map_it = _prev_left_pts_map.find(id);
@@ -482,6 +508,17 @@ void FeatureTracker::drawTrack(const cv::Mat &img_left, const cv::Mat &img_right
 
 cv::Mat FeatureTracker::getTrackImage() {
     return img_track;
+}
+
+void FeatureTracker::setFeatureStatus(int feature_id, int status) {
+    pts_status[feature_id] = status;
+    if (status < 0) {
+        removed_pts.insert(feature_id);
+    }
+}
+
+map<int, int> FeatureTracker::getFeatureStatus() {
+    return pts_status;
 }
 
 int FeaturePerId::endFrame() const {
@@ -505,7 +542,8 @@ void FeatureManager::setRic(Matrix3d _ric[]) {
 
 int FeatureManager::getFeatureCount() {
     int cnt = 0;
-    for (auto &it : feature) {
+    for (auto &_it : feature) {
+        auto &it = _it.second;
         it.used_num = static_cast<int>(it.feature_per_frame.size());
         if (it.used_num >= 2 && it.start_frame < WINDOW_SIZE - 2) {
             cnt++;
@@ -518,9 +556,7 @@ void FeatureManager::setDepthImage(const cv::Mat &depth) {
     depth_img = depth;
 }
 
-bool FeatureManager::addFeatureCheckParallax(int frame_count,
-                                             std::map<int, std::vector<std::pair<int, Matrix<double, 7, 1>>>> &image,
-                                             double td) {
+bool FeatureManager::addFeatureCheckParallax(int frame_count, FeatureFrame &image, double td) {
     ROS_DEBUG("input feature: %zu", image.size());
     ROS_DEBUG("num of feature: %d", getFeatureCount());
     double parallax_sum = 0;
@@ -556,38 +592,34 @@ bool FeatureManager::addFeatureCheckParallax(int frame_count,
 
         // feature point id
         int feature_id = iter->first;
-        // attempt to find same featuer id in feature per id buffer
-        auto it = find_if(feature.begin(), feature.end(), [feature_id](const FeaturePerId &it) {
-            return it.feature_id == feature_id;
-        });
 
-        // if it's new feature point, add it to the vector of feature
-        if (it == feature.end()) {
+        // new feature
+        if (feature.find(feature_id) == feature.end()) {
             // record feature point id and frame index
-            feature.emplace_back(feature_id, frame_count);
+            feature.emplace(feature_id, FeaturePerId(feature_id, frame_count));
             // add feature point message to feature buffer
-            feature.back().feature_per_frame.emplace_back(feature_per_frame);
+            feature[feature_id].feature_per_frame.push_back(feature_per_frame);
             // new feature point number on the current frame
             new_feature_num++;
         }
-        // if it's old feature point
-        else if (it->feature_id == feature_id) {
-            // add feature point message to feature buffer
-            it->feature_per_frame.emplace_back(feature_per_frame);
-
+        // old feature
+        else {
+            feature[feature_id].feature_per_frame.push_back(feature_per_frame);
             // old feature point number on the current frame
             last_track_num++;
-            if (it->feature_per_frame.size() >= 4)
+            if (feature[feature_id].feature_per_frame.size() >= 4)
                 // number of the feature point which been tracked greater than 4 frame
                 long_track_num++;
         }
     }
+
     // check if it is keyframe
     if (frame_count < 2 || last_track_num < 20 || long_track_num < 200 || new_feature_num > 0.1 * last_track_num)
         return true;
 
     // traverse feature points
-    for (auto &it_per_id : feature) {
+    for (auto &_it : feature) {
+        auto &it_per_id = _it.second;
         // if the feature points two frames ago have been tracked until the current frame is still
         if (it_per_id.start_frame <= frame_count - 2 && it_per_id.start_frame + int(it_per_id.feature_per_frame.size()) - 1 >= frame_count - 1) {
             // calculate the distance of the current feature point on the normalized camera plane in the first two frames
@@ -595,6 +627,7 @@ bool FeatureManager::addFeatureCheckParallax(int frame_count,
             parallax_num++;
         }
     }
+
     // check again if it is keyframe
     if (parallax_num == 0) {
         return true;
@@ -604,67 +637,86 @@ bool FeatureManager::addFeatureCheckParallax(int frame_count,
         ROS_DEBUG("current parallax: %lf", parallax_sum / parallax_num * FOCAL_LENGTH);
         return parallax_sum / parallax_num >= MIN_PARALLAX;
     }
-} // namespace ATOM_VIO
+}
 
-std::vector<std::pair<Vector3d, Vector3d>> FeatureManager::getCorresponding(int frame_count_l, int frame_count_r) {
-    std::vector<std::pair<Vector3d, Vector3d>> corres;
+vector<pair<Vector3d, Vector3d>> FeatureManager::getCorresponding(int frame_count_l, int frame_count_r) {
+    vector<pair<Vector3d, Vector3d>> corres;
     // traverse feature points
     for (auto &it : feature) {
+        auto &it_per_id = it.second;
         // the observation frame of the feature point covers l and r
-        if (it.start_frame <= frame_count_l && it.endFrame() >= frame_count_r) {
+        if (it_per_id.start_frame <= frame_count_l && it_per_id.endFrame() >= frame_count_r) {
             Vector3d a = Vector3d::Zero(), b = Vector3d::Zero();
-            int idx_l = frame_count_l - it.start_frame;
-            int idx_r = frame_count_r - it.start_frame;
+            int idx_l = frame_count_l - it_per_id.start_frame;
+            int idx_r = frame_count_r - it_per_id.start_frame;
 
-            a = it.feature_per_frame[idx_l].point;
-            b = it.feature_per_frame[idx_r].point;
+            a = it_per_id.feature_per_frame[idx_l].point;
+            b = it_per_id.feature_per_frame[idx_r].point;
 
-            corres.emplace_back(a, b);
+            corres.emplace_back(make_pair(a, b));
         }
     }
     return corres;
 }
 
-void FeatureManager::setDepth(const VectorXd &x) {
-    int feature_index = -1;
-    // traverse feature points
-    for (auto &it_per_id : feature) {
-        it_per_id.used_num = static_cast<int>(it_per_id.feature_per_frame.size());
-        if (!(it_per_id.used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2))
-            continue;
+void FeatureManager::setDepth(map<int, double> deps) {
+    for (auto &it : deps) {
+        int _id = it.first;
+        double depth = it.second;
+        auto &it_per_id = feature[_id];
 
-        it_per_id.estimated_depth = 1.0 / x(++feature_index);
-        if (it_per_id.estimated_depth < 0)
+        it_per_id.estimated_depth = 1.0 / depth;
+
+        if (it_per_id.estimated_depth < 0) {
             it_per_id.solve_flag = 2;
-        else
+        } else {
             it_per_id.solve_flag = 1;
+        }
     }
 }
 
 void FeatureManager::removeFailures() {
     for (auto it = feature.begin(), it_next = feature.begin(); it != feature.end(); it = it_next) {
         it_next++;
-        if (it->solve_flag == 2)
+        auto &_it = it->second;
+        if (_it.solve_flag == 2)
             feature.erase(it);
     }
 }
 
 void FeatureManager::clearDepth() {
-    for (auto &it_per_id : feature) {
+    for (auto &_it : feature) {
+        auto &it_per_id = _it.second;
         it_per_id.estimated_depth = -1;
     }
 }
 
-VectorXd FeatureManager::getDepthVector() {
-    VectorXd dep_vec(getFeatureCount());
-    int feature_index = -1;
-    for (auto &it_per_id : feature) {
-        it_per_id.used_num = static_cast<int>(it_per_id.feature_per_frame.size());
-        if (!(it_per_id.used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2))
-            continue;
+map<int, double> FeatureManager::getDepthVector() {
+    //This function gives actually points for solving; We only use oldest max_solve_cnt point, oldest pts has good track
+    //As for some feature point not solve all the time; we do re triangulate on it
+    map<int, double> dep_vec;
+    auto pts_status = ft.getFeatureStatus();
+    for (auto &_it : feature) {
+        auto &it_per_id = _it.second;
+        it_per_id.used_num = it_per_id.feature_per_frame.size();
 
-        dep_vec(++feature_index) = 1. / it_per_id.estimated_depth;
+        if (dep_vec.size() < MAX_SOLVE_CNT && pts_status[it_per_id.feature_id] == FeatureLevel::OPTIMIZE
+            && it_per_id.used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2) {
+            dep_vec[it_per_id.feature_id] = 1. / it_per_id.estimated_depth;
+        }
     }
+    if (dep_vec.size() < MAX_SOLVE_CNT) {
+        for (auto &_it : feature) {
+            auto &it_per_id = _it.second;
+            it_per_id.used_num = it_per_id.feature_per_frame.size();
+
+            if (dep_vec.size() < MAX_SOLVE_CNT && pts_status[it_per_id.feature_id] == FeatureLevel::UN_INITIAL
+                && it_per_id.used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2) {
+                dep_vec[it_per_id.feature_id] = 1. / it_per_id.estimated_depth;
+            }
+        }
+    }
+
     return dep_vec;
 }
 
@@ -686,8 +738,8 @@ void FeatureManager::triangulatePoint(Matrix<double, 3, 4> &Pose0,
 }
 
 bool FeatureManager::solvePoseByPnP(Matrix3d &R, Vector3d &P,
-                                    std::vector<cv::Point2f> &pts2D,
-                                    std::vector<cv::Point3f> &pts3D) {
+                                    vector<cv::Point2f> &pts2D,
+                                    vector<cv::Point3f> &pts3D) {
     Matrix3d R_initial;
     Vector3d P_initial;
 
@@ -698,7 +750,7 @@ bool FeatureManager::solvePoseByPnP(Matrix3d &R, Vector3d &P,
     P_initial = -(R_initial * P);
     // feature point is too less
     if (int(pts2D.size()) < 4) {
-        std::cout << "feature tracking not enough, please slowly move you device!" << std::endl;
+        cout << "feature tracking not enough, please slowly move you device!" << endl;
         return false;
     }
     cv::Mat r, rvec, t, D, tmp_r;
@@ -711,7 +763,7 @@ bool FeatureManager::solvePoseByPnP(Matrix3d &R, Vector3d &P,
     pnp_succ = cv::solvePnP(pts3D, pts2D, K, D, rvec, t, true);
 
     if (!pnp_succ) {
-        std::cout << "pnp failed !" << std::endl;
+        cout << "pnp failed !" << endl;
         return false;
     }
     cv::Rodrigues(rvec, r);
@@ -730,10 +782,11 @@ void FeatureManager::initFramePoseByPnP(int frame_cnt, Vector3d Ps_[],
                                         Matrix3d Rs_[], Vector3d tic_[],
                                         Matrix3d ric_[]) {
     if (frame_cnt > 0) {
-        std::vector<cv::Point2f> pts2D;
-        std::vector<cv::Point3f> pts3D;
+        vector<cv::Point2f> pts2D;
+        vector<cv::Point3f> pts3D;
         // traverse feature points in the current frame
-        for (auto &it_per_id : feature) {
+        for (auto &it : feature) {
+            auto &it_per_id = it.second;
             // check depth > 0
             if (it_per_id.estimated_depth > 0) {
                 int index = frame_cnt - it_per_id.start_frame;
@@ -779,7 +832,9 @@ void FeatureManager::initFramePoseByPnP(int frame_cnt, Vector3d Ps_[],
 void FeatureManager::triangulate(Vector3d Ps_[], Matrix3d Rs_[], Vector3d tic_[],
                                  Matrix3d ric_[]) {
     // traverse feature points in the current frame
-    for (auto &it_per_id : feature) {
+    for (auto &it : feature) {
+        auto &it_per_id = it.second;
+
         // if has get depth
         if (it_per_id.estimated_depth > 0)
             continue;
@@ -795,10 +850,10 @@ void FeatureManager::triangulate(Vector3d Ps_[], Matrix3d Rs_[], Vector3d tic_[]
             Vector3d tr = Ps_[imu_i] + Rs_[imu_i] * tic_[0];
             Matrix3d Rr = Rs_[imu_i] * ric_[0];
 
-            std::vector<double> verified_depths;
+            vector<double> verified_depths;
             int no_depth_num = 0;
 
-            std::vector<double> rough_depths;
+            vector<double> rough_depths;
             // perform deep cross-validation on the same id feature point,
             // and average the depth on the initial frame of the point whose reprojection error is less than the threshold as the estimated depth
             for (int k = 0; k < (int)it_per_id.feature_per_frame.size(); k++) {
@@ -883,13 +938,13 @@ void FeatureManager::triangulate(Vector3d Ps_[], Matrix3d Rs_[], Vector3d tic_[]
                         continue;
                     }
                 } else {
-                    double depth_sum = std::accumulate(std::begin(rough_depths), std::end(rough_depths), 0.0);
+                    double depth_sum = accumulate(begin(rough_depths), end(rough_depths), 0.0);
                     double depth_ave = depth_sum / rough_depths.size();
                     it_per_id.estimated_depth = depth_ave;
                     it_per_id.estimate_flag = 0;
                 }
             } else {
-                double depth_sum = std::accumulate(std::begin(verified_depths), std::end(verified_depths), 0.0);
+                double depth_sum = accumulate(begin(verified_depths), end(verified_depths), 0.0);
                 double depth_ave = depth_sum / verified_depths.size();
                 it_per_id.estimated_depth = depth_ave;
                 it_per_id.estimate_flag = 1;
@@ -985,14 +1040,15 @@ void FeatureManager::triangulate(Vector3d Ps_[], Matrix3d Rs_[], Vector3d tic_[]
     }
 }
 
-void FeatureManager::removeOutlier(std::set<int> &outlier_index) {
-    std::set<int>::iterator set_it;
+void FeatureManager::removeOutlier(set<int> &outlier_index) {
+    set<int>::iterator set_it;
     for (auto it = feature.begin(), it_next = feature.begin(); it != feature.end(); it = it_next) {
         it_next++;
 
-        int index = it->feature_id;
+        int index = it->first;
         set_it = outlier_index.find(index);
         if (set_it != outlier_index.end()) {
+            ft.setFeatureStatus(it->second.feature_id, FeatureLevel::REMOVE);
             feature.erase(it);
         }
     }
@@ -1001,30 +1057,31 @@ void FeatureManager::removeOutlier(std::set<int> &outlier_index) {
 void FeatureManager::removeBackShiftDepth(const Matrix3d &marg_R, const Vector3d &marg_P,
                                           const Matrix3d &new_R, const Vector3d &new_P) {
     // traverse feature points
-    for (auto it = feature.begin(), it_next = feature.begin(); it != feature.end(); it = it_next) {
+    for (auto _it = feature.begin(), it_next = feature.begin(); _it != feature.end(); _it = it_next) {
         it_next++;
 
-        if (it->start_frame != 0)
-            it->start_frame--;
+        auto &it = _it->second;
+        if (it.start_frame != 0)
+            it.start_frame--;
         else {
             // the normalized camera point of the first observed frame
-            Vector3d uv_i = it->feature_per_frame[0].point;
+            Vector3d uv_i = it.feature_per_frame[0].point;
             // delete the observation frame that is currently marg off
-            it->feature_per_frame.erase(it->feature_per_frame.begin());
+            it.feature_per_frame.erase(it.feature_per_frame.begin());
             // if there are less than 2 observation frames, delete the point
-            if (it->feature_per_frame.size() < 2) {
-                feature.erase(it);
+            if (it.feature_per_frame.size() < 2) {
+                feature.erase(_it);
                 continue;
             } else {
                 // estimated_depth is the depth value under the observation frame of the first frame, and now it is updated to the next frame
-                Vector3d pts_i = uv_i * it->estimated_depth;
+                Vector3d pts_i = uv_i * it.estimated_depth;
                 Vector3d w_pts_i = marg_R * pts_i + marg_P;
                 Vector3d pts_j = new_R.transpose() * (w_pts_i - new_P);
                 double dep_j = pts_j(2);
                 if (dep_j > 0)
-                    it->estimated_depth = dep_j;
+                    it.estimated_depth = dep_j;
                 else
-                    it->estimated_depth = INIT_DEPTH;
+                    it.estimated_depth = INIT_DEPTH;
             }
         }
     }
@@ -1034,12 +1091,14 @@ void FeatureManager::removeBack() {
     for (auto it = feature.begin(), it_next = feature.begin(); it != feature.end(); it = it_next) {
         it_next++;
 
-        if (it->start_frame != 0)
-            it->start_frame--;
+        if (it->second.start_frame != 0)
+            it->second.start_frame--;
         else {
-            it->feature_per_frame.erase(it->feature_per_frame.begin());
-            if (it->feature_per_frame.empty())
+            it->second.feature_per_frame.erase(it->second.feature_per_frame.begin());
+            if (it->second.feature_per_frame.empty()) {
                 feature.erase(it);
+                ft.setFeatureStatus(it->second.feature_id, FeatureLevel::REMOVE);
+            }
         }
     }
 }
@@ -1048,16 +1107,18 @@ void FeatureManager::removeFront(int frame_count) {
     for (auto it = feature.begin(), it_next = feature.begin(); it != feature.end(); it = it_next) {
         it_next++;
 
-        if (it->start_frame == frame_count) {
-            it->start_frame--;
+        if (it->second.start_frame == frame_count) {
+            it->second.start_frame--;
         } else {
             // delete the frame dropped by marg
-            int j = WINDOW_SIZE - 1 - it->start_frame;
-            if (it->endFrame() < frame_count - 1)
+            int j = WINDOW_SIZE - 1 - it->second.start_frame;
+            if (it->second.endFrame() < frame_count - 1)
                 continue;
-            it->feature_per_frame.erase(it->feature_per_frame.begin() + j);
-            if (it->feature_per_frame.empty())
+            it->second.feature_per_frame.erase(it->second.feature_per_frame.begin() + j);
+            if (it->second.feature_per_frame.empty()) {
                 feature.erase(it);
+                ft.setFeatureStatus(it->second.feature_id, FeatureLevel::REMOVE);
+            }
         }
     }
 }
@@ -1090,7 +1151,7 @@ double FeatureManager::compensatedParallax2(const FeaturePerId &it_per_id,
     double du_comp = u_i_comp - u_j, dv_comp = v_i_comp - v_j;
 
     // computes the distance between two points on the normalized camera plane
-    ans = std::max(ans, sqrt(std::min(du * du + dv * dv, du_comp * du_comp + dv_comp * dv_comp)));
+    ans = max(ans, sqrt(min(du * du + dv * dv, du_comp * du_comp + dv_comp * dv_comp)));
 
     return ans;
 }

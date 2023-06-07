@@ -47,7 +47,7 @@ public:
     // relocation state
     int index;
     double time;
-    std::vector<Vector3d> relo_uv_id;
+    vector<Vector3d> relo_uv_id;
     Matrix3d relo_R;
     Vector3d relo_T;
 };
@@ -60,7 +60,7 @@ public:
     /**
      * @brief: load brief pattern file
      */
-    explicit BriefExtractor(const std::string &pattern_file);
+    explicit BriefExtractor(const string &pattern_file);
     /**
      * @brief: compute brief descriptor with brief pattern file 
      */
@@ -100,21 +100,21 @@ public:
      * @brief: the brief descriptor of a feature point in the key frame matches all the descriptors of the loop frame
      */
     static bool searchInAera(const BRIEF::bitset &window_descriptor,
-                             const std::vector<BRIEF::bitset> &descriptors_old,
-                             const std::vector<cv::KeyPoint> &keypoints_old,
-                             const std::vector<cv::KeyPoint> &keypoints_old_norm,
+                             const vector<BRIEF::bitset> &descriptors_old,
+                             const vector<cv::KeyPoint> &keypoints_old,
+                             const vector<cv::KeyPoint> &keypoints_old_norm,
                              cv::Point2f &best_match,
                              cv::Point2f &best_match_norm);
 
     /**
      * @brief: match the keyframe with the loopback frame for the BRIEF descriptor 
      */
-    void searchByBRIEFDes(std::vector<cv::Point2f> &matched_2d_old,
-                          std::vector<cv::Point2f> &matched_2d_old_norm,
-                          std::vector<uchar> &status,
-                          const std::vector<BRIEF::bitset> &descriptors_old,
-                          const std::vector<cv::KeyPoint> &keypoints_old,
-                          const std::vector<cv::KeyPoint> &keypoints_old_norm);
+    void searchByBRIEFDes(vector<cv::Point2f> &matched_2d_old,
+                          vector<cv::Point2f> &matched_2d_old_norm,
+                          vector<uchar> &status,
+                          const vector<BRIEF::bitset> &descriptors_old,
+                          const vector<cv::KeyPoint> &keypoints_old,
+                          const vector<cv::KeyPoint> &keypoints_old_norm);
 
     /**
      * @brief: find and establish the matching relationship between the keyframe and the loopframe, return True to confirm the formation of the loop
@@ -125,8 +125,8 @@ public:
      * @brief: use pnp ransac method to solve R & T and remove outliers
      */
     void PnPRANSAC(const vector<cv::Point2f> &matched_2d_old_norm,
-                   const std::vector<cv::Point3f> &matched_3d,
-                   std::vector<uchar> &status,
+                   const vector<cv::Point3f> &matched_3d,
+                   vector<uchar> &status,
                    Vector3d &PnP_T_old, Matrix3d &PnP_R_old);
 
     /**
@@ -237,7 +237,7 @@ public:
     /**
      * @brief: load vocabulary library
      */
-    void loadVocabulary(const std::string &voc_path);
+    void loadVocabulary(const string &voc_path);
 
     /**
      * @brief: confirm IMU is enabled, start 4 & 6 DOF optimize thread
@@ -266,7 +266,7 @@ public:
     Matrix3d Rs{};
 
     // relocation frame
-    std::queue<RelocationFrame> relo_frame_buf;
+    queue<RelocationFrame> relo_frame_buf;
 
 private:
     /**
@@ -298,9 +298,9 @@ private:
      */
     void updatePath();
 
-    std::queue<int> optimize_buf;
-    std::list<KeyFrame *> keyframelist;
-    std::vector<bool> sequence_loop;
+    queue<int> optimize_buf;
+    list<KeyFrame *> keyframelist;
+    vector<bool> sequence_loop;
 
     // index
     int global_index;

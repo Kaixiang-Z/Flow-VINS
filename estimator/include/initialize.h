@@ -27,10 +27,10 @@ using namespace Eigen;
  * @brief: class for sfm feature
  */
 struct SFMFeature {
-    bool state;                                        // sfm state
-    int id;                                            // feature id
-    std::vector<std::pair<int, Vector2d>> observation; // normalize camera points in x frame
-    double position[3];                                // triangulate points
+    bool state;                              // sfm state
+    int id;                                  // feature id
+    vector<pair<int, Vector2d>> observation; // normalize camera points in x frame
+    double position[3];                      // triangulate points
 };
 
 /**
@@ -86,15 +86,15 @@ public:
      */
     bool construct(int frame_num, Quaterniond *Q, Vector3d *T, int l,
                    const Matrix3d &relative_R, const Vector3d &relative_T,
-                   std::vector<SFMFeature> &sfm_feature,
-                   std::map<int, Vector3d> &sfm_tracked_points);
+                   vector<SFMFeature> &sfm_feature,
+                   map<int, Vector3d> &sfm_tracked_points);
 
 private:
     /**
      * @brief: 3d-2d PnP method to calculate pose in i frame
      */
     bool solveFrameByPnP(Matrix3d &R_initial, Vector3d &P_initial, int i,
-                         std::vector<SFMFeature> &sfm_feature) const;
+                         vector<SFMFeature> &sfm_feature) const;
 
     /**
      * @brief: SVD method to calculate triangulate points
@@ -108,7 +108,7 @@ private:
      */
     void triangulateTwoFrames(int frame0, Matrix<double, 3, 4> &Pose0,
                               int frame1, Matrix<double, 3, 4> &Pose1,
-                              std::vector<SFMFeature> &sfm_feature) const;
+                              vector<SFMFeature> &sfm_feature) const;
 
     int m_feature_num{};
 };
@@ -122,12 +122,12 @@ public:
      * @brief: constructor for ImageFrame, parameters initialize 
      */
     ImageFrame() = default;
-    ImageFrame(const std::map<int, std::vector<std::pair<int, Matrix<double, 7, 1>>>> &_points, double _t) :
+    ImageFrame(const map<int, vector<pair<int, Matrix<double, 7, 1>>>> &_points, double _t) :
         points(_points),
         t(_t),
         is_key_frame(false){};
 
-    std::map<int, std::vector<std::pair<int, Matrix<double, 7, 1>>>> points;
+    map<int, vector<pair<int, Matrix<double, 7, 1>>>> points;
     double t{};
     Matrix3d R;
     Vector3d T;
@@ -143,21 +143,21 @@ MatrixXd tangentBasis(Vector3d &g0);
 /**
  * @brief: calculate gyro bias by ldlt solver and update IMU pre-integration
  */
-void solveGyroscopeBias(std::map<double, ImageFrame> &all_image_frame, Vector3d *Bgs);
+void solveGyroscopeBias(map<double, ImageFrame> &all_image_frame, Vector3d *Bgs);
 
 /**
  * @brief: correct gravity vector after linear alignment
  */
-void refineGravity(std::map<double, ImageFrame> &all_image_frame, Vector3d &g, VectorXd &x);
+void refineGravity(map<double, ImageFrame> &all_image_frame, Vector3d &g, VectorXd &x);
 
 /**
  * @brief: initialize speed, gravity and scale factor and refine gravity and scale factor
  */
-bool linearAlignment(std::map<double, ImageFrame> &all_image_frame, Vector3d &g, VectorXd &x);
+bool linearAlignment(map<double, ImageFrame> &all_image_frame, Vector3d &g, VectorXd &x);
 
 /**
  * @brief: main process of visual and Imu aligenment, include gyro bias update and initialize speed, gravity and scale factor
  */
-bool visualImuAlignment(std::map<double, ImageFrame> &all_image_frame, Vector3d *Bgs, Vector3d &g, VectorXd &x);
+bool visualImuAlignment(map<double, ImageFrame> &all_image_frame, Vector3d *Bgs, Vector3d &g, VectorXd &x);
 
 } // namespace FLOW_VINS
