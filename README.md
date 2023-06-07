@@ -67,7 +67,7 @@ Clone the repository and catkin_make:
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
-### TUM Dynamic Example
+#### TUM Dynamic Example
 
 ```
     roslaunch vio_system vins_tum_rgbd.launch
