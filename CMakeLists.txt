@@ -14,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
         nav_msgs
         tf
         cv_bridge
-        vins_third_party
         image_transport
         )
 
@@ -63,6 +62,23 @@ add_library(vio_system_lib
         src/segment.cc
         src/publisher.cc
         src/parameters.cc
+
+        thirdparty/CameraModel/camera.cc
+        thirdparty/CameraModel/gpl.cc
+        thirdparty/CameraModel/camera_factory.cc
+        thirdparty/CameraModel/cata_camera.cc
+        thirdparty/CameraModel/equidstant_camera.cc
+        thirdparty/CameraModel/pinhole_camera.cc
+        thirdparty/DBoW/BowVector.cpp
+        thirdparty/DBoW/FBrief.cpp
+        thirdparty/DBoW/FeatureVector.cpp
+        thirdparty/DBoW/QueryResults.cpp
+        thirdparty/DBoW/ScoringObject.cpp
+        thirdparty/DUtils/Random.cpp
+        thirdparty/DUtils/Timestamp.cpp
+        thirdparty/DVision/BRIEF.cpp
+        thirdparty/VocabularyBinary.cpp
+
         )
 
 target_link_libraries(vio_system_lib 

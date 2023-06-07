@@ -23,11 +23,11 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
-#include "../../thirdparty/DBoW/DBoW2.h"
-#include "../../thirdparty/DVision/DVision.h"
-#include "../../thirdparty/CameraModel/camera_factory.h"
-#include "../../thirdparty/CameraModel/cata_camera.h"
-#include "../../thirdparty/CameraModel/pinhole_camera.h"
+#include "../thirdparty/DBoW/DBoW2.h"
+#include "../thirdparty/DVision/DVision.h"
+#include "../thirdparty/CameraModel/camera_factory.h"
+#include "../thirdparty/CameraModel/cata_camera.h"
+#include "../thirdparty/CameraModel/pinhole_camera.h"
 #include "common.h"
 #include "parameters.h"
 #include "publisher.h"

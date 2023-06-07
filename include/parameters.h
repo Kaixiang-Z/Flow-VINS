@@ -21,9 +21,9 @@
 #include <vector>
 #include <mutex>
 #include <thread>
-#include "../../thirdparty/CameraModel/camera_factory.h"
-#include "../../thirdparty/CameraModel/cata_camera.h"
-#include "../../thirdparty/CameraModel/pinhole_camera.h"
+#include "../thirdparty/CameraModel/camera_factory.h"
+#include "../thirdparty/CameraModel/cata_camera.h"
+#include "../thirdparty/CameraModel/pinhole_camera.h"
 #include "common.h"
 
 namespace FLOW_VINS {

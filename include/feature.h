@@ -21,9 +21,9 @@
 #include <ros/console.h>
 #include <vector>
 
-#include "../../thirdparty/CameraModel/camera_factory.h"
-#include "../../thirdparty/CameraModel/cata_camera.h"
-#include "../../thirdparty/CameraModel/pinhole_camera.h"
+#include "../thirdparty/CameraModel/camera_factory.h"
+#include "../thirdparty/CameraModel/cata_camera.h"
+#include "../thirdparty/CameraModel/pinhole_camera.h"
 #include "parameters.h"
 #include "common.h"
 

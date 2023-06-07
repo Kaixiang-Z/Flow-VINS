@@ -6,7 +6,7 @@
  */
 
 #include "../include/publisher.h"
-#include "../../estimator/include/estimator.h"
+#include "../include/estimator.h"
 
 namespace FLOW_VINS {
 
