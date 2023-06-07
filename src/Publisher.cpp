@@ -5,8 +5,8 @@
  * @Description: ROS topic
  */
 
-#include "../include/publisher.h"
-#include "../include/estimator.h"
+#include "../include/Publisher.h"
+#include "../include/Estimator.h"
 
 namespace FLOW_VINS {
 

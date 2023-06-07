@@ -1,4 +1,4 @@
-#include "cata_camera.h"
+#include "CataCamera.h"
 
 #include <cmath>
 #include <cstdio>
@@ -9,7 +9,7 @@
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "gpl.h"
+#include "Gpl.h"
 
 namespace CameraModel {
 

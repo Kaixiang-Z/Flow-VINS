@@ -5,7 +5,7 @@
  * @Description: visual sfm initial
  */
 
-#include "../include/initialize.h"
+#include "../include/Initialize.h"
 
 namespace FLOW_VINS {
 GlobalSFM::GlobalSFM() = default;

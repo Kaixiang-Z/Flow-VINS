@@ -4,13 +4,13 @@
  * @Mailbox: kxzhang@buaa.edu.cn
  * @Description: camera model
  */
-#include "camera_factory.h"
+#include "CameraFactory.h"
 #include <boost/algorithm/string.hpp>
 #include <ceres/ceres.h>
 
-#include "cata_camera.h"
-#include "equidstant_camera.h"
-#include "pinhole_camera.h"
+#include "CataCamera.h"
+#include "EquidstantCamera.h"
+#include "PinholeCamera.h"
 
 namespace CameraModel {
 

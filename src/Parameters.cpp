@@ -5,7 +5,7 @@
  * @Description: global parameters
  */
 
-#include "../include/parameters.h"
+#include "../include/Parameters.h"
 
 namespace FLOW_VINS {
 

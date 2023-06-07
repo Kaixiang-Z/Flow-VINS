@@ -12,8 +12,7 @@
 #include <ros/console.h>
 #include <thread>
 #include <unistd.h>
-#include "include/estimator.h"
-#include "include/segment.h"
+#include "include/Estimator.h"
 
 using namespace FLOW_VINS;
 

@@ -9,7 +9,7 @@
 #include <boost/shared_ptr.hpp>
 #include <opencv2/core/core.hpp>
 
-#include "camera.h"
+#include "Camera.h"
 
 namespace CameraModel {
 

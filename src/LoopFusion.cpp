@@ -5,7 +5,7 @@
  * @Description: pose graph
  */
 
-#include "../include/loopfusion.h"
+#include "../include/LoopFusion.h"
 
 namespace FLOW_VINS {
 

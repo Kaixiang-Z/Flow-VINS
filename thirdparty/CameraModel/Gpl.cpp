@@ -1,4 +1,4 @@
-#include "gpl.h"
+#include "Gpl.h"
 
 #include <set>
 #ifdef _WIN32

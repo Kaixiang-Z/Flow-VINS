@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "Camera.h"
 
 #include <opencv2/calib3d/calib3d.hpp>
 

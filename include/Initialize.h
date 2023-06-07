@@ -16,9 +16,9 @@
 #include <cstdlib>
 #include <deque>
 #include <map>
-#include "feature.h"
-#include "factor.h"
-#include "common.h"
+#include "Feature.h"
+#include "FactorGraph.h"
+#include "Common.h"
 
 namespace FLOW_VINS {
 using namespace Eigen;

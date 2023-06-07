@@ -2,10 +2,10 @@
  * @Author: Zhang Kaixiang
  * @Date: 2022-12-21 17:55:38
  * @Mailbox: kxzhang@buaa.edu.cn
- * @Description: 位姿估计
+ * @Description: pose estimator
  */
 
-#include "../include/estimator.h"
+#include "../include/Estimator.h"
 
 namespace FLOW_VINS {
 

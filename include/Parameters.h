@@ -21,10 +21,10 @@
 #include <vector>
 #include <mutex>
 #include <thread>
-#include "../thirdparty/CameraModel/camera_factory.h"
-#include "../thirdparty/CameraModel/cata_camera.h"
-#include "../thirdparty/CameraModel/pinhole_camera.h"
-#include "common.h"
+#include "../thirdparty/CameraModel/CameraFactory.h"
+#include "../thirdparty/CameraModel/CataCamera.h"
+#include "../thirdparty/CameraModel/PinholeCamera.h"
+#include "Common.h"
 
 namespace FLOW_VINS {
 

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "parameters.h"
+#include "Parameters.h"
 
 #include <cv_bridge/cv_bridge.h>
 #include <eigen3/Eigen/Dense>

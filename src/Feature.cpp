@@ -5,7 +5,7 @@
  * @Description: feature extractor
  */
 
-#include "../include/feature.h"
+#include "../include/Feature.h"
 
 namespace FLOW_VINS {
 

@@ -7,8 +7,8 @@
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "equidstant_camera.h"
-#include "gpl.h"
+#include "EquidstantCamera.h"
+#include "Gpl.h"
 
 namespace CameraModel {
 

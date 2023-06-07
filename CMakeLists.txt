@@ -53,22 +53,22 @@ catkin_package()
 
 # build library
 add_library(vio_system_lib
-        src/common.cc
-        src/feature.cc
-        src/estimator.cc
-        src/factor.cc
-        src/initialize.cc
-        src/loopfusion.cc
-        src/segment.cc
-        src/publisher.cc
-        src/parameters.cc
+        src/Common.cpp
+        src/Feature.cpp
+        src/Estimator.cpp
+        src/FactorGraph.cpp
+        src/Initialize.cpp
+        src/LoopFusion.cpp
+        src/Segment.cpp
+        src/Publisher.cpp
+        src/Parameters.cpp
 
-        thirdparty/CameraModel/camera.cc
-        thirdparty/CameraModel/gpl.cc
-        thirdparty/CameraModel/camera_factory.cc
-        thirdparty/CameraModel/cata_camera.cc
-        thirdparty/CameraModel/equidstant_camera.cc
-        thirdparty/CameraModel/pinhole_camera.cc
+        thirdparty/CameraModel/Camera.cpp
+        thirdparty/CameraModel/Gpl.cpp
+        thirdparty/CameraModel/CameraFactory.cpp
+        thirdparty/CameraModel/CataCamera.cpp
+        thirdparty/CameraModel/EquidstantCamera.cpp
+        thirdparty/CameraModel/PinholeCamera.cpp
         thirdparty/DBoW/BowVector.cpp
         thirdparty/DBoW/FBrief.cpp
         thirdparty/DBoW/FeatureVector.cpp

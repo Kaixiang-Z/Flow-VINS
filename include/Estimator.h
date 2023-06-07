@@ -17,14 +17,14 @@
 #include <std_msgs/Header.h>
 #include <thread>
 #include <unordered_map>
-#include "parameters.h"
-#include "publisher.h"
-#include "common.h"
-#include "feature.h"
-#include "initialize.h"
-#include "factor.h"
-#include "loopfusion.h"
-#include "segment.h"
+#include "Parameters.h"
+#include "Publisher.h"
+#include "Common.h"
+#include "Feature.h"
+#include "Initialize.h"
+#include "FactorGraph.h"
+#include "LoopFusion.h"
+#include "Segment.h"
 
 namespace FLOW_VINS {
 /**

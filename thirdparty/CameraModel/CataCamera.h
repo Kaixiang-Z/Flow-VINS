@@ -4,7 +4,7 @@
 #include <string>
 
 #include <ceres/rotation.h>
-#include "camera.h"
+#include "Camera.h"
 
 namespace CameraModel {
 

@@ -4,7 +4,7 @@
  * @Date: 2023-05-25 08:25:09
  * @Description: segmantic inference
  */
-#include "../include/segment.h"
+#include "../include/Segment.h"
 
 namespace FLOW_VINS {
 

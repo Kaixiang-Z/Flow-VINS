@@ -14,9 +14,9 @@
 #include <NvInfer.h>
 #include <fstream>
 #include <thread>
-#include "common.h"
-#include "parameters.h"
-#include "publisher.h"
+#include "Common.h"
+#include "Parameters.h"
+#include "Publisher.h"
 
 /**
  * @brief: check if cuda is available 

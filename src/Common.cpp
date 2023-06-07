@@ -4,7 +4,7 @@
  * @Date: 2023-05-28 11:07:04
  * @Description: common functions
  */
-#include "../include/common.h"
+#include "../include/Common.h"
 
 namespace FLOW_VINS {
 

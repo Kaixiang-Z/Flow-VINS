@@ -4,7 +4,7 @@
  * @Date: 2023-05-28 10:45:54
  * @Description: factor
  */
-#include "../include/factor.h"
+#include "../include/FactorGraph.h"
 
 namespace FLOW_VINS {
 

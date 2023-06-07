@@ -18,8 +18,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include "parameters.h"
-#include "common.h"
+#include "Parameters.h"
+#include "Common.h"
 
 namespace FLOW_VINS {
 
