@@ -14,7 +14,7 @@ The work that has been completed so far is：
 
 * add a instance segmentation model ( Yolov8n-seg ), to detect dynamic objects in scene, after acceleration by TensorRT, segment speed is reach 10ms each image(GTX 1070).
 * make a hierarchical management of feature points: Limit the scale of back-end optimization by classifying feature points and improve the speed of back-end optimization， by test, the optimization speed is up to 100Hz each iterations(11th i5)
-* Break away from the ROS framework as much as possible (but not completely), and merge multiple nodes into a single node.
+* Break away from the ROS framework as much as possible (but not completely), and merge multiple nodes into a single node. 
 
 
 Work to be done is：
@@ -26,7 +26,7 @@ Work to be done is：
 * ROS Noetic
 * CUDA 11.2 (for Segment)
 * TensorRT 8.2.5.1 (for Segment)
-* OpenCV 4.7.0
+* OpenCV 4.7.0 (for Segment)
 * Ceres Solver
 * Eigen
 
