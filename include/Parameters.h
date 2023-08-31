@@ -38,6 +38,7 @@ const int MIN_LOOP_NUM = 25;
 // flags
 extern int MULTIPLE_THREAD;
 extern int USE_SEGMENTATION;
+extern int USE_MAGNETOMETER;
 extern int USE_GPU_ACC;
 extern int USE_IMU;
 extern int ESTIMATE_EXTRINSIC;

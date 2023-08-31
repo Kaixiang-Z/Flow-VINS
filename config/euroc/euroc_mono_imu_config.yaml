@@ -6,6 +6,7 @@ imu: 1
 num_of_cam: 1  
 depth: 0
 use_segmentation: 0
+use_magnetometer: 0
 use_gpu_acc: 0
 fix_depth: 1
 depth_min_dist: 0.4
@@ -52,7 +53,7 @@ freq_ctrl_num: 2
 max_solver_time: 0.04   # max solver itration time (ms), to guarantee real time
 max_num_iterations: 8   # max solver itrations, to guarantee real time
 keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
-max_solve_cnt: 60       # max solve point number
+max_solve_cnt: 300       # max solve point number
 
 #imu parameters       The more accurate parameters you provide, the better performance
 acc_n: 0.1          # accelerometer measurement noise standard deviation. 

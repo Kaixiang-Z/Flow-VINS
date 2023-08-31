@@ -12,6 +12,7 @@ namespace FLOW_VINS {
 // flags
 int MULTIPLE_THREAD;
 int USE_SEGMENTATION;
+int USE_MAGNETOMETER;
 int USE_GPU_ACC;
 int USE_IMU;
 int ESTIMATE_EXTRINSIC;
@@ -121,6 +122,8 @@ void readParameters(const string &config_file) {
     FLOW_BACK = fsSettings["flow_back"];
     // set whether to use semantic segmemtation
     USE_SEGMENTATION = fsSettings["use_segmentation"];
+    // set whether to use magnetometer
+    USE_MAGNETOMETER = fsSettings["use_magnetometer"];
     // set whether to use GPU acceleration
     USE_GPU_ACC = fsSettings["use_gpu_acc"];
     // set whether to enable multithreading

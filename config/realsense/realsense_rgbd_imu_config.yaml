@@ -6,6 +6,7 @@ imu: 1
 num_of_cam: 1
 depth: 1  
 use_segmentation: 0
+use_magnetometer: 0
 use_gpu_acc: 0
 depth_min_dist: 0.6
 depth_max_dist: 8

@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         cv_bridge
         image_transport
+        imu_data
         )
 
 # Boost
@@ -62,6 +63,8 @@ add_library(vio_system_lib
         src/Segment.cpp
         src/Publisher.cpp
         src/Parameters.cpp
+        src/KalmanFilter.cpp
+        src/HealthyCheck.cpp
 
         thirdparty/CameraModel/Camera.cpp
         thirdparty/CameraModel/Gpl.cpp

@@ -10,6 +10,7 @@
 #include <mutex>
 #include <ros/ros.h>
 #include <ros/console.h>
+#include <imu_data/IMUInfo.h>
 #include <thread>
 #include <unistd.h>
 #include "include/Estimator.h"
@@ -36,6 +37,27 @@ void imuCallback(const sensor_msgs::ImuConstPtr &imu_msg) {
     Vector3d gyr(rx, ry, rz);
 
     estimator.inputImu(t, acc, gyr);
+}
+
+void ahrsCallback(const imu_data::IMUInfoConstPtr &imu_msg) {
+    double t = imu_msg->header.stamp.toSec();
+    double ax = imu_msg->linear_acceleration[0];
+    double ay = imu_msg->linear_acceleration[1];
+    double az = imu_msg->linear_acceleration[2];
+    double gx = imu_msg->angular_velocity[0];
+    double gy = imu_msg->angular_velocity[1];
+    double gz = imu_msg->angular_velocity[2];
+    double mx = imu_msg->magnetic[0] - 6.5;
+    double my = imu_msg->magnetic[1] - 323.5;
+    double mz = imu_msg->magnetic[2] - 162;
+
+    Eigen::Vector3d acc(ax, ay, az);
+    Eigen::Vector3d gyr(gx, gy, gz);
+    Eigen::Vector3d mag(mx, my, mz);
+
+    if (acc.norm() != 0 && mag.norm() != 0) {
+        estimator.inputAhrs(t, acc, gyr, mag);
+    }
 }
 
 /**
@@ -160,15 +182,18 @@ int main(int argc, char *argv[]) {
     // subscribe IMU topic
     ros::Subscriber sub_imu =
         n.subscribe(IMU_TOPIC, 2000, imuCallback, ros::TransportHints().tcpNoDelay());
+    // subscribe Ahrs topic
+    ros::Subscriber sub_ahrs =
+        n.subscribe("/ahrs", 2000, ahrsCallback, ros::TransportHints().tcpNoDelay());
     // subscribe left image
     ros::Subscriber sub_img0 =
         n.subscribe(IMAGE0_TOPIC, 2000, imageCallback);
     // subscribe right image
     ros::Subscriber sub_img1 =
         n.subscribe<sensor_msgs::Image>(IMAGE1_TOPIC, 2000, [&](const sensor_msgs::ImageConstPtr &msg) {mutex_image.lock(); img1_buf.push(msg); mutex_image.unlock(); });
+
     // synchronize process
     thread thread_synchronize = thread(process);
-
     ros::spin();
     return 0;
 }

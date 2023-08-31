@@ -614,7 +614,7 @@ bool FeatureManager::addFeatureCheckParallax(int frame_count, FeatureFrame &imag
     }
 
     // check if it is keyframe
-    if (frame_count < 2 || last_track_num < 20 || long_track_num < 200 || new_feature_num > 0.1 * last_track_num)
+    if (frame_count < 2 || last_track_num < 20 || long_track_num < 40 || new_feature_num > 0.5 * last_track_num)
         return true;
 
     // traverse feature points
@@ -696,6 +696,7 @@ map<int, double> FeatureManager::getDepthVector() {
     //As for some feature point not solve all the time; we do re triangulate on it
     map<int, double> dep_vec;
     auto pts_status = ft.getFeatureStatus();
+    int total_feature_num = 0, dynamic_feature_num = 0;
     for (auto &_it : feature) {
         auto &it_per_id = _it.second;
         it_per_id.used_num = it_per_id.feature_per_frame.size();
@@ -704,7 +705,16 @@ map<int, double> FeatureManager::getDepthVector() {
             && it_per_id.used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2) {
             dep_vec[it_per_id.feature_id] = 1. / it_per_id.estimated_depth;
         }
+
+        if (it_per_id.used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2) {
+            total_feature_num++;
+            if (pts_status[it_per_id.feature_id] == FeatureLevel::DYNAMIC) dynamic_feature_num++;
+        }
     }
+    ROS_INFO("total feature num: %d", total_feature_num);
+    ROS_INFO("dynamic feature num: %d", dynamic_feature_num);
+    ROS_INFO("ratio: %lf", (double)dynamic_feature_num / total_feature_num);
+
     if (dep_vec.size() < MAX_SOLVE_CNT) {
         for (auto &_it : feature) {
             auto &it_per_id = _it.second;

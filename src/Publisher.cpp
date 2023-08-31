@@ -67,6 +67,7 @@ void printStatistics(const Estimator &estimator, double t) {
         return;
     ROS_INFO_STREAM("position: " << estimator.Ps[WINDOW_SIZE].transpose());
     ROS_INFO_STREAM("orientation: " << estimator.Vs[WINDOW_SIZE].transpose());
+
     if (ESTIMATE_EXTRINSIC) {
         cv::FileStorage fs(EX_CALIB_RESULT_PATH, cv::FileStorage::WRITE);
         for (int i = 0; i < NUM_OF_CAM; i++) {

@@ -25,6 +25,8 @@
 #include "FactorGraph.h"
 #include "LoopFusion.h"
 #include "Segment.h"
+#include "KalmanFilter.h"
+#include "HealthyCheck.h"
 
 namespace FLOW_VINS {
 /**
@@ -102,6 +104,11 @@ public:
     void inputImu(double t, const Vector3d &linear_acceleration, const Vector3d &angular_velocity);
 
     /**
+     * @brief: input AHRS data, include magnetometer, then fast predict and update latest PQV state
+     */
+    void inputAhrs(double t, const Vector3d &linear_acceleration, const Vector3d &angular_velocity, const Vector3d &magnetometer);
+
+    /**
      * @brief: input image data, feature tracking and fill the feature into feature buffer
      */
     void inputImage(double t, const cv::Mat &_img,
@@ -148,6 +155,11 @@ public:
     void initFirstImuPose(vector<pair<double, Vector3d>> &acc_vector);
 
     /**
+     * @brief: initialize first AHRS frame pose, alignment first acceleration with gravity vector to get initial rotation
+     */
+    void initFirstAhrsPose(vector<pair<double, Vector3d>> &acc_vector, vector<pair<double, Vector3d>> &mag_vector);
+
+    /**
      * @brief: check if IMU data is available
      */
     bool ImuAvailable(double t);
@@ -158,6 +170,14 @@ public:
     bool getImuInterval(double t0, double t1,
                         vector<pair<double, Vector3d>> &acc_vector,
                         vector<pair<double, Vector3d>> &gyr_vector);
+
+    /**
+     * @brief: from the AHRS data queue, extract the data of the time period (t0, t1)
+     */
+    bool getAhrsInterval(double t0, double t1,
+                         vector<pair<double, Vector3d>> &acc_vector,
+                         vector<pair<double, Vector3d>> &gyr_vector,
+                         vector<pair<double, Vector3d>> &mag_vector);
 
     /**
      * @brief: check IMU observibility
@@ -312,6 +332,7 @@ public:
     // common data structures
     queue<pair<double, Vector3d>> acc_buf;
     queue<pair<double, Vector3d>> gyr_buf;
+    queue<pair<double, Vector3d>> mag_buf;
     queue<pair<double, FeatureFrame>> feature_buf;
     double prev_time{}, cur_time{};
     bool open_ex_estimation{};
@@ -319,6 +340,7 @@ public:
     // common class in vio estimator system
     FeatureManager feature_manager;
     //Backend backend;
+    ESKF_Attitude eskf_estimator;
 
     int frame_count{};
     int image_count{};
@@ -402,5 +424,8 @@ public:
 
     // for segmentation
     YOLOv8_seg yolo;
+
+    // for healthy check
+    HealthyCheck healthy;
 };
 } // namespace FLOW_VINS

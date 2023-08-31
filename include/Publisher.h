@@ -30,127 +30,130 @@
 
 namespace FLOW_VINS {
 
-class Estimator;
-class PoseGraph;
-class CameraPoseVisualization;
+    class Estimator;
+
+    class PoseGraph;
+
+    class CameraPoseVisualization;
 
 /**
  * @brief: register vio estimator node publisher
  */
-void registerPub(ros::NodeHandle &n);
+    void registerPub(ros::NodeHandle &n);
 
 /**
  * @brief: publish tracking image
  */
-void pubTrackImage(const cv::Mat &imgTrack, double t);
+    void pubTrackImage(const cv::Mat &imgTrack, double t);
 
 /**
  * @brief: print state data and compute average process cost
  */
-void printStatistics(const Estimator &estimator, double t);
+    void printStatistics(const Estimator &estimator, double t);
 
 /**
  * @brief: publish odometry & path message and write files
  */
-void pubOdometry(const Estimator &estimator, const std_msgs::Header &header);
+    void pubOdometry(const Estimator &estimator, const std_msgs::Header &header);
 
 /**
  * @brief: publish key poses maker (only in window size)
  */
-void pubKeyPoses(const Estimator &estimator, const std_msgs::Header &header);
+    void pubKeyPoses(const Estimator &estimator, const std_msgs::Header &header);
 
 /**
  * @brief: publish camera visualization pose
  */
-void pubCameraPose(const Estimator &estimator, const std_msgs::Header &header);
+    void pubCameraPose(const Estimator &estimator, const std_msgs::Header &header);
 
 /**
  * @brief: publish point cloud
  */
-void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header);
+    void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header);
 
 /**
  * @brief: publish tf state
  */
-void pubTF(const Estimator &estimator, const std_msgs::Header &header);
+    void pubTF(const Estimator &estimator, const std_msgs::Header &header);
 
 /**
  * @brief: publish key frame
  */
-void pubKeyframe(const Estimator &estimator);
+    void pubKeyframe(const Estimator &estimator);
 
 /**
  * @brief: publish pose graph
  */
-void pubPoseGraph(const PoseGraph &pose_graph);
+    void pubPoseGraph(const PoseGraph &pose_graph);
 
 /**
  * @brief: publish semantic mask
  */
-void pubSemanticMask(const cv::Mat &img, const std_msgs::Header &header);
+    void pubSemanticMask(const cv::Mat &img, const std_msgs::Header &header);
 
 /**
  * @brief: publish semantic image
  */
-void pubSemanticImage(const cv::Mat &img, const std_msgs::Header &header);
+    void pubSemanticImage(const cv::Mat &img, const std_msgs::Header &header);
 
-class CameraPoseVisualization {
-public:
-    string marker_ns;
-    /**
-     * @brief: set camera color and instance
-     */
-    CameraPoseVisualization(float r, float g, float b, float a);
+    class CameraPoseVisualization {
+    public:
+        string marker_ns;
 
-    /**
-     * @brief: set camera scale, scale relates to the size of camera display 
-     */
-    void setScale(double s);
+        /**
+         * @brief: set camera color and instance
+         */
+        CameraPoseVisualization(float r, float g, float b, float a);
 
-    /**
-     * @brief: set camera line width
-     */
-    void setLineWidth(double width);
+        /**
+         * @brief: set camera scale, scale relates to the size of camera display
+         */
+        void setScale(double s);
 
-    /**
-     * @brief: set camera pose and orientation
-     */
-    void add_pose(const Vector3d &p, const Quaterniond &q);
+        /**
+         * @brief: set camera line width
+         */
+        void setLineWidth(double width);
 
-    /**
-     * @brief: reset camera display
-     */
-    void reset();
+        /**
+         * @brief: set camera pose and orientation
+         */
+        void add_pose(const Vector3d &p, const Quaterniond &q);
 
-    /**
-     * @brief: publish camera display topic
-     */
-    void publish_by(ros::Publisher &pub, const std_msgs::Header &header);
+        /**
+         * @brief: reset camera display
+         */
+        void reset();
 
-    /**
-     * @brief: add camera edge line to display 
-     */
-    void add_edge(const Vector3d &p0, const Vector3d &p1);
+        /**
+         * @brief: publish camera display topic
+         */
+        void publish_by(ros::Publisher &pub, const std_msgs::Header &header);
 
-    /**
-     * @brief: add camera loop edge line to display 
-     */
-    void add_loopedge(const Vector3d &p0, const Vector3d &p1);
+        /**
+         * @brief: add camera edge line to display
+         */
+        void add_edge(const Vector3d &p0, const Vector3d &p1);
 
-private:
-    vector<visualization_msgs::Marker> markers;
-    std_msgs::ColorRGBA image_boundary_color;
-    std_msgs::ColorRGBA optical_center_connector_color;
-    double scale;
-    double line_width;
+        /**
+         * @brief: add camera loop edge line to display
+         */
+        void add_loopedge(const Vector3d &p0, const Vector3d &p1);
 
-    static const Vector3d imlt;
-    static const Vector3d imlb;
-    static const Vector3d imrt;
-    static const Vector3d imrb;
-    static const Vector3d oc;
-    static const Vector3d lt0;
-    static const Vector3d lt1;
-    static const Vector3d lt2;
-};
+    private:
+        vector<visualization_msgs::Marker> markers;
+        std_msgs::ColorRGBA image_boundary_color;
+        std_msgs::ColorRGBA optical_center_connector_color;
+        double scale;
+        double line_width;
+
+        static const Vector3d imlt;
+        static const Vector3d imlb;
+        static const Vector3d imrt;
+        static const Vector3d imrb;
+        static const Vector3d oc;
+        static const Vector3d lt0;
+        static const Vector3d lt1;
+        static const Vector3d lt2;
+    };
 } // namespace FLOW_VINS

@@ -164,6 +164,36 @@ public:
     }
 
     /**
+     * @brief: convert euler to quaternion 
+     */
+    template <typename T>
+    static Eigen::Quaterniond euler2Quaternion(const MatrixBase<T> &euler) {
+        Eigen::Quaterniond quaternion;
+
+        // quaternion = Eigen::AngleAxisd(euler(2), Eigen::Vector3d::UnitX())
+
+        //              * Eigen::AngleAxisd(euler(1), Eigen::Vector3d::UnitY())
+
+        //              * Eigen::AngleAxisd(euler(0), Eigen::Vector3d::UnitZ());
+
+        double cos_roll = cos(euler[0] * 0.5);
+        double sin_roll = sin(euler[0] * 0.5);
+        double cos_pitch = cos(euler[1] * 0.5);
+        double sin_pitch = sin(euler[1] * 0.5);
+        double cos_yaw = cos(euler[2] * 0.5);
+        double sin_yaw = sin(euler[2] * 0.5);
+
+        double w = cos_roll * cos_pitch * cos_yaw + sin_roll * sin_pitch * sin_yaw;
+        double x = cos_pitch * sin_roll * cos_yaw - cos_roll * sin_pitch * sin_yaw;
+        double y = cos_roll * cos_yaw * sin_pitch + sin_roll * cos_pitch * sin_yaw;
+        double z = cos_roll * cos_pitch * sin_yaw - cos_yaw * sin_pitch * sin_roll;
+
+        quaternion = Eigen::Quaterniond(w, x, y, z);
+
+        return quaternion;
+    }
+
+    /**
      * @brief: convert body gravity vector to world coordinate
      */
     template <typename T>
@@ -251,7 +281,6 @@ public:
         r_t[1] = R[3] * t[0] + R[4] * t[1] + R[5] * t[2];
         r_t[2] = R[6] * t[0] + R[7] * t[1] + R[8] * t[2];
     }
-
-}; // namespace FLOW_VINS
+};
 
 } // namespace FLOW_VINS

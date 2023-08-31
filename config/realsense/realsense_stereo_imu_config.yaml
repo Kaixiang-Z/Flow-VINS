@@ -6,6 +6,7 @@ imu: 1
 num_of_cam: 2  
 depth: 0
 use_segmentation: 0
+use_magnetometer: 0
 use_gpu_acc: 0
 fix_depth: 1
 depth_min_dist: 0.4
@@ -15,7 +16,7 @@ static_init: 1
 imu_topic: "/camera/imu"
 image0_topic: "/camera/infra1/image_rect_raw"
 image1_topic: "/camera/infra2/image_rect_raw"
-output_path: "/home/dji/output/"
+output_path: "/home/zkx/Workspace/Slam/EVO/realsense"
  
 cam0_calib: "left.yaml"
 cam1_calib: "right.yaml"
