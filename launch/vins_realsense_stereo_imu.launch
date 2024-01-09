@@ -1,8 +1,0 @@
-
-<launch>
-
-   <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find vio_system)/config/rviz/vio_rviz_config.rviz" />
-   <node name="vio_estimator" pkg="vio_system" type="vio_system_node" output="screen" args="$(find vio_system)/config/realsense/realsense_stereo_imu_config.yaml" />
-   
-
-</launch>

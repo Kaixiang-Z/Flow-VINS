@@ -8,7 +8,6 @@ depth: 0
 use_segmentation: 0
 use_magnetometer: 0
 use_gpu_acc: 0
-fix_depth: 1
 depth_min_dist: 0.4
 depth_max_dist: 10
 static_init: 1
@@ -16,13 +15,12 @@ static_init: 1
 imu_topic: "/imu0"
 image0_topic: "/cam0/image_raw"
 image1_topic: "/cam1/image_raw"
-output_path: "/home/zkx/Workspace/Slam/EVO/MH-04"
+output_path: "/home/zkx/Work/Slam/Experiments_Result/MH-04"
 
 cam0_calib: "cam0_mei.yaml"
 cam1_calib: "cam1_mei.yaml"
 image_width: 752
 image_height: 480
-   
 
 # Extrinsic parameter between IMU and Camera.
 estimate_extrinsic: 0   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
@@ -62,7 +60,7 @@ freq_ctrl_num: 2
 max_solver_time: 0.04   # max solver itration time (ms), to guarantee real time
 max_num_iterations: 8   # max solver itrations, to guarantee real time
 keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
-max_solve_cnt: 60       # max solve point number
+max_solve_cnt: 600       # max solve point number
 
 #imu parameters       The more accurate parameters you provide, the better performance
 acc_n: 0.1          # accelerometer measurement noise standard deviation. 

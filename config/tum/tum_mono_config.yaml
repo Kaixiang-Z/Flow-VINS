@@ -4,19 +4,19 @@ imu: 0
 num_of_cam: 1 
 use_segmentation: 1
 use_magnetometer: 0
-use_gpu_acc: 0
+use_gpu_acc: 1
+
 
 depth: 1
-fix_depth: 1
 depth_min_dist: 0.4
 depth_max_dist: 10
-static_init: 1
+static_init: 0
 
 #common parameters
 imu_topic: "/imu"
 image0_topic: "/camera/rgb/image_color"
 image1_topic: "/camera/depth/image"
-output_path: "/home/zkx/Workspace/Slam/EVO/walking_xyz"
+output_path: "/home/zkx/Work/Slam/Experiments_Result/walking_xyz"
  
 cam0_calib: "camera.yaml"
 cam1_calib: "camera.yaml"
@@ -63,7 +63,7 @@ freq_ctrl_num: 1
 max_solver_time: 0.04  # max solver itration time (ms), to guarantee real time
 max_num_iterations: 8   # max solver itrations, to guarantee real time
 keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
-max_solve_cnt: 100       # max solve point number
+max_solve_cnt: 300       # max solve point number
 
 #imu parameters       The more accurate parameters you provide, the better performance
 acc_n: 0.1          # accelerometer measurement noise standard deviation. #0.2   0.04

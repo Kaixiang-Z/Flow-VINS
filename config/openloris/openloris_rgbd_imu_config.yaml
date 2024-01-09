@@ -1,0 +1,80 @@
+%YAML:1.0
+
+#common parameters
+#support: 1 imu 1 cam; 1 imu 2 cam: 2 cam; 1mu 1cam 1dep
+imu: 0
+num_of_cam: 1
+depth: 1  
+use_segmentation: 1
+use_magnetometer: 0
+use_gpu_acc: 0
+depth_min_dist: 0.6
+depth_max_dist: 8
+static_init: 1
+
+imu_topic: "/d400/imu0"
+image0_topic: "/d400/color/image_raw"
+image1_topic: "/d400/aligned_depth_to_color/image_raw"
+output_path: "/home/zkx/Workspace/Slam/EVO/market1-2"
+
+cam0_calib: "camera.yaml"
+cam1_calib: "camera.yaml"
+image_width: 640
+image_height: 480
+
+
+
+# Extrinsic parameter between IMU and Camera.
+estimate_extrinsic: 0   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
+                        # 1  Have an initial guess about extrinsic parameters. We will optimize around your initial guess.
+
+body_T_cam0: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   data: [ 0.999975572679493,  0.003849141066713,  0.005854714944742, 0.0203127935529,
+           -0.003828680351062,  0.999986658473099,  -0.003501944262433, -0.00510325236246,
+           -0.005868115609379,  0.003479442469180,  0.999976848846595, -0.0112013882026,
+           0, 0, 0, 1 ]
+ 
+body_T_cam1: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   data: [ 1, 0, 0, 0,
+           0, 1, 0, 0,
+           0, 0, 1, 0,
+           0, 0, 0, 1 ]
+ 
+
+#Multiple thread support
+multiple_thread: 1
+
+#feature traker parameters
+max_cnt: 200            # max feature number in feature tracking
+min_dist: 30            # min distance between two features
+freq: 10               # frequency (Hz) of publish tracking result. At least 10Hz for good estimation. If set 0, the frequency will be same as raw image
+F_threshold: 1.0        # ransac threshold (pixel)
+show_track: 1           # publish tracking image as topic
+flow_back: 1            # perform forward and backward optical flow to improve feature tracking accuracy
+freq_ctrl_num: 2
+
+#optimization parameters
+max_solver_time: 0.04   # max solver iteration time (ms), to guarantee real time
+max_num_iterations: 8   # max solver iterations, to guarantee real time
+keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
+max_solve_cnt: 200       # max solve point number
+
+#imu parameters       The more accurate parameters you provide, the better performance
+# imu 参数 你提供的参数越准确，性能越好
+acc_n : 0.1           #加速度计测量噪声标准偏差。#0.2 0.04
+gyr_n : 0.01          #陀螺仪测量噪声标准偏差。#0.05 0.004
+acc_w : 0.001          #加速度计偏差随机工作噪声标准偏差。#0.002
+gyr_w : 0.0001        #陀螺仪偏差随机工作噪声标准偏差。#4.0e-5
+g_norm : 9.805          #重力大小
+
+#unsynchronization parameters
+estimate_td: 0                      # online estimate time offset between camera and imu
+td: 0                            # initial value of time offset. unit: s. read image clock + td = real image clock (IMU clock)
+
+

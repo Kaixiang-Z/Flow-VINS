@@ -8,7 +8,6 @@ depth: 0
 use_segmentation: 0
 use_magnetometer: 0
 use_gpu_acc: 0
-fix_depth: 1
 depth_min_dist: 0.4
 depth_max_dist: 10
 static_init: 1
@@ -16,7 +15,7 @@ static_init: 1
 imu_topic: "/imu0"
 image0_topic: "/cam0/image_raw"
 image1_topic: "/cam1/image_raw"
-output_path: "/home/zkx/Workspace/Slam/EVO/MH-04"
+output_path: "/home/zkx/Work/Slam/Experiments_Result/MH-04"
 
 cam0_calib: "cam0_mei.yaml"
 cam1_calib: "cam1_mei.yaml"

@@ -11,7 +11,6 @@ use_gpu_acc: 0
 depth_min_dist: 0.6
 depth_max_dist: 8
 static_init: 1
-fix_depth: 1
 
 imu_topic: "/camera/imu"
 image0_topic: "/camera/color/image_raw"

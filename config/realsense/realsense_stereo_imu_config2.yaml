@@ -1,0 +1,79 @@
+%YAML:1.0
+ 
+#common parameters
+#support: 1 imu 1 cam; 1 imu 2 cam: 2 cam; 
+imu: 1         
+num_of_cam: 2  
+depth: 0
+use_segmentation: 0
+use_gpu_acc: 0
+depth_min_dist: 0.4
+depth_max_dist: 10
+static_init: 1
+
+imu_topic: "/camera/imu"
+image0_topic: "/camera/infra1/image_rect_raw"
+image1_topic: "/camera/infra2/image_rect_raw"
+output_path:  "/home/zkx/Workspace/Slam/EVO/realsense"
+ 
+cam0_calib: "left.yaml"
+cam1_calib: "right.yaml"
+image_width: 640
+image_height: 480
+
+ 
+# IMU和Camera之间的外部参数。
+estimate_extrinsic : 1    # 0 有一个准确的外在参数。我们将信任以下 imu^R_cam，imu^T_cam，不要更改它。
+                        # 1 初步猜测外在参数。我们将围绕您最初的猜测进行优化。
+ 
+body_T_cam0: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   data: [ -5.7586305857286746e-03, -4.0463318787729019e-03,
+       9.9997523237933461e-01, 2.0329267950355900e-02,
+       -9.9998287214160420e-01, -1.0224590553211677e-03,
+       -5.7628118925283633e-03, 7.9325209639615653e-03,
+       1.0457519809151661e-03, -9.9999129084997906e-01,
+       -4.0403746097850135e-03, 2.8559824645148020e-03, 0., 0., 0., 1. ]
+
+body_T_cam1: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   data: [ -1.0021770212322867e-03, 3.6313480322730518e-04,
+       9.9999943188700535e-01, 1.5285779565991807e-02,
+       -9.9999216342926500e-01, -3.8303422615924010e-03,
+       -1.0007788055728661e-03, -5.2435791444330505e-02,
+       3.8299766679101843e-03, -9.9999259827824449e-01,
+       3.6697063849344680e-04, 8.6931302450199057e-03, 0., 0., 0., 1. ]
+ 
+ 
+#多线程支持
+multiple_thread: 1
+ 
+#特征跟踪器参数
+max_cnt : 150             #特征跟踪中的最大特征数
+min_dist : 30             #两个特征之间的最小距离
+freq : 10                 #发布跟踪结果的频率 (Hz)。至少 10Hz 以获得良好的估计。如果设置为 0，则频率将与原始图像相同
+F_threshold : 1.0         # ransac 阈值（像素）
+show_track : 1            # 将跟踪图像发布为主题
+flow_back : 1             #执行正向和反向光流以提高特征跟踪精度
+freq_ctrl_num: 2
+
+#优化参数
+max_solver_time : 0.04   #最大求解器迭代时间（毫秒），保证实时
+max_num_iterations : 8    #最大求解器迭代次数，以保证实时
+keyframe_parallax : 10.0  #关键帧选择阈值（像素）
+ 
+# imu 参数 你提供的参数越准确，性能越好
+acc_n : 0.1           #加速度计测量噪声标准偏差。#0.2 0.04
+gyr_n : 0.01          #陀螺仪测量噪声标准偏差。#0.05 0.004
+acc_w : 0.001          #加速度计偏差随机工作噪声标准偏差。#0.002
+gyr_w : 0.0001        #陀螺仪偏差随机工作噪声标准偏差。#4.0e-5
+g_norm : 9.805          #重力大小
+ 
+#非同步参数
+estimate_td : 1                       #在线估计相机和imu之间的时间偏移
+td : 0.00                              #时间偏移的初始值。单位。读取图像时钟 + td = 真实图像时钟（IMU 时钟）
+ 
